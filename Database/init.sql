@@ -11,7 +11,7 @@ CREATE TABLE budget
     month       int      NOT NULL,
     year        int      NOT NULL,
     amount      DECIMAL(15,2) NOT NULL,
-    categories_id int      NOT NULL
+    category_id int      NOT NULL
 );
 
 CREATE TABLE categories
@@ -33,12 +33,12 @@ CREATE TABLE transactions
 
 ALTER TABLE budget
     ADD CONSTRAINT FK_categories_TO_budget
-        FOREIGN KEY (categories_id)
+        FOREIGN KEY (category_id)
         REFERENCES categories (id);
 
 ALTER TABLE transactions
     ADD CONSTRAINT FK_categories_TO_transactions
-        FOREIGN KEY (categories_id)
+        FOREIGN KEY (category_id)
         REFERENCES categories (id);
 
 ALTER TABLE transactions

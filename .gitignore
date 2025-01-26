@@ -172,3 +172,7 @@ cython_debug/
 
 # Database files
 /Database/data
+
+# VS Code settings
+/.vscode
+.vscode/settings.json
