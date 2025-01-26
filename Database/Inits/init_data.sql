@@ -39,11 +39,5 @@ INSERT INTO categories (name, main_category_id, hidden) VALUES ('Urodziny', (SEL
 
 INSERT INTO budget (month, year, amount, category_id)  SELECT 1,2025,0,Id FROM categories;
 
--- Create budget view
-CREATE OR REPLACE VIEW budget_view AS SELECT b.month, b.year, b.amount, mc.name as main_category_name, c.name as category_name
-FROM budget b 
-JOIN categories c ON b.category_id = c.id
-JOIN categories mc ON c.main_category_id = mc.id
-WHERE mc.hidden = false AND c.hidden = false;
 
 
