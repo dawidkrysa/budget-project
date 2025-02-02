@@ -1,0 +1,16 @@
+# Basic dependencies
+requests               # For making HTTP requests
+pandas                 # For handling CSV files and data processing
+psycopg2               # PostgreSQL adapter for Python (psycopg2)
+psycopg2-binary        # Binary version of psycopg2 for compatibility
+jupyter                # For running Jupyter notebooks
+matplotlib             # For creating plots and visualizations
+voila                  # For converting Jupyter notebooks into standalone web applications
+
+# Additional libraries
+numpy                  # For numerical computing and handling large datasets
+python-dotenv          # For loading environment variables from a .env file
+
+# Optional tools
+fastapi                # If you're using FastAPI for the API layer
+uvicorn                # ASGI server for FastAPI

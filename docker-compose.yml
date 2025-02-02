@@ -12,3 +12,19 @@ services:
       - ./Database/init.sql:/docker-entrypoint-initdb.d/init.sql
     ports:
       - "5432:5432"
+
+  python:
+    image: python:3.13.1
+    container_name: python_dev
+    volumes:
+      - ./Python/app:/app
+      - ./.env:/app/.env:ro  # Mounting the .env file from the main directory to the container
+    working_dir: /app
+    stdin_open: true
+    tty: true
+    ports:
+      - "8000:8000"  # Expose port 8888 for Jupyter Notebook
+    depends_on:
+      - db
+    command: >
+      /bin/sh -c "pip install --upgrade pip && pip install -r requirements.txt && uvicorn app:app --reload --host 0.0.0.0 --port 8000"
