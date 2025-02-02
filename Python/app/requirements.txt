@@ -6,6 +6,7 @@ psycopg2-binary        # Binary version of psycopg2 for compatibility
 jupyter                # For running Jupyter notebooks
 matplotlib             # For creating plots and visualizations
 voila                  # For converting Jupyter notebooks into standalone web applications
+python-multipart       # For handling file uploads in FastAPI
 
 # Additional libraries
 numpy                  # For numerical computing and handling large datasets
