@@ -7,7 +7,7 @@ __pycache__/
 *.so
 
 # Distribution / packaging
-.Python
+.PythonAPI
 build/
 develop-eggs/
 dist/
@@ -171,7 +171,7 @@ cython_debug/
 .pypirc
 
 # Database files
-/Database/data
+/Postgres/data
 
 # VS Code settings
 /.vscode
