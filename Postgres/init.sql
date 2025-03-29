@@ -44,6 +44,18 @@ CREATE TABLE IF NOT EXISTS transactions
   CONSTRAINT FK_payees_TO_transactions FOREIGN KEY (payee_id) REFERENCES payees (id)
 );
 
+CREATE TABLE IF NOT EXISTS users
+(
+  id   bigint GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
+  login text   NOT NULL UNIQUE,
+  password text   NOT NULL,
+  active boolean DEFAULT false
+  email text NOT NULL UNIQUE,
+  CONSTRAINT email_check CHECK (email LIKE '%_@__%.__%')
+  name text NOT NULL,
+  CONSTRAINT name_check CHECK (name != '')
+);
+
 -- Create a view that shows the account name and the sum of all transactions for that account.
 -- The view should only include transactions that are not hidden and categories that are not hidden.
 -- The view should be ordered by account name.
