@@ -1,19 +1,89 @@
-from fastapi import Body, FastAPI, File, UploadFile, HTTPException
+from datetime import datetime, timedelta, timezone
+from fastapi import Body, FastAPI, File, UploadFile, HTTPException, Depends, status
+from fastapi.security import OAuth2PasswordBearer, OAuth2PasswordRequestForm
+from jwt.exceptions import InvalidTokenError
+from passlib.context import CryptContext
 import csv
 from io import StringIO
 from pydantic import BaseModel
 from typing import Annotated
 import json
 import os
+import jwt
+from passlib.context import CryptContext
 from dotenv import load_dotenv
 import psycopg2 as pg
 from typing import List, Optional
 from datetime import date, datetime
+import base64
 
 # Create a FastAPI instance
-app = FastAPI()
-
+app = FastAPI(title="Budget API", version="1.0.0")
+pwd_context = CryptContext(
+    schemes=["argon2"],
+    default="argon2"
+)
+oauth2_scheme = OAuth2PasswordBearer(tokenUrl="token")
 load_dotenv("/app/.env") 
+
+
+# ----------------- Authorization -----------
+class User(BaseModel):
+    hashed_password: str
+
+class Token(BaseModel):
+    access_token: str
+    token_type: str
+
+def encrypt_password(password: str):
+    return pwd_context.hash(password)
+
+def check_encrypted_password(password, hashed):
+    return pwd_context.verify(password, hashed)
+
+def authenticate_user(login: str, password: str):
+    conn = pg.connect(f"host=db dbname={os.getenv('POSTGRES_DB')} user={os.getenv('POSTGRES_USER')} password={os.getenv('POSTGRES_PASSWORD')}")
+    try:
+        # Open a cursor to perform database operations
+        cur = conn.cursor()
+        # Check if account name already exists
+        cur.execute("SELECT password FROM users WHERE active = true AND login = %s", (login,))
+        result = cur.fetchone()
+        if result is None:
+            return False
+        return check_encrypted_password(password, result[0])     
+    finally:
+        cur.close()
+        conn.close()
+
+def create_access_token(data: dict, expires_delta: timedelta | None = None):
+    to_encode = data.copy()
+    if expires_delta:
+        expire = datetime.now(timezone.utc) + expires_delta
+    else:
+        expire = datetime.now(timezone.utc) + timedelta(minutes=15)
+    to_encode.update({"exp": expire})
+    private_key = os.getenv("PRIVATE_KEY")
+    private_key = base64.b64decode(private_key).decode('utf-8') if private_key else None
+    encoded_jwt = jwt.encode(to_encode, private_key, algorithm=os.getenv('ALGORITHM'))
+    return encoded_jwt
+
+@app.post("/token")
+async def login_for_access_token(
+    form_data: Annotated[OAuth2PasswordRequestForm, Depends()],
+    ) -> Token:
+    user = authenticate_user(form_data.username, form_data.password)
+    if not user:
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Incorrect username or password",
+            headers={"WWW-Authenticate": "Bearer"},
+        )
+    access_token_expires = timedelta(minutes=int(os.getenv('ACCESS_TOKEN_EXPIRE_MINUTES')))
+    access_token = create_access_token(
+        data={"sub": form_data.username}, expires_delta=access_token_expires
+    )
+    return Token(access_token=access_token, token_type="bearer")
 
 # ----------------- Category -----------------
 
@@ -34,7 +104,7 @@ class Category(BaseModel):
 
 # Simple GET endpoint to get all categories
 @app.get("/categories", response_model=List[Category], tags=["Categories"])
-async def get_all_categories():
+async def get_all_categories(token: Annotated[str, Depends(oauth2_scheme)]):
     try:
         # Connect to an existing database
         conn = pg.connect(f"host=db dbname={os.getenv('POSTGRES_DB')} user={os.getenv('POSTGRES_USER')} password={os.getenv('POSTGRES_PASSWORD')}")
@@ -62,7 +132,7 @@ class Account(BaseModel):
 
 # Simple GET endpoint to get all accounts
 @app.get("/accounts", response_model=List[Account], tags=["Accounts"])
-async def get_all_accounts():
+async def get_all_accounts(token: Annotated[str, Depends(oauth2_scheme)]):
     try:
         # Connect to an existing database
         conn = pg.connect(f"host=db dbname={os.getenv('POSTGRES_DB')} user={os.getenv('POSTGRES_USER')} password={os.getenv('POSTGRES_PASSWORD')}")
@@ -82,7 +152,7 @@ async def get_all_accounts():
 
 # POST endpoint to add a new account
 @app.post("/accounts/add", response_model=Account, tags=["Accounts"])
-async def add_account(account: Annotated[Account, Body(
+async def add_account(token: Annotated[str, Depends(oauth2_scheme)], account: Annotated[Account, Body(
     examples=[
         {
             "account_name": "Account name"
@@ -119,7 +189,7 @@ async def add_account(account: Annotated[Account, Body(
         
 # PUT endpoint to update account name and hidden status
 @app.put("/accounts/update/{account_id}", response_model=Account, tags=["Accounts"])
-async def update_account(account_id: int, account: Annotated[Account, Body(
+async def update_account(token: Annotated[str, Depends(oauth2_scheme)], account_id: int, account: Annotated[Account, Body(
     examples=[
         {
             "account_name": "Account name",
@@ -197,7 +267,7 @@ class Transaction(BaseModel):
         return cls(date=db_obj.date.isoformat())
 
 @app.get("/transactions", response_model=List[Transaction], tags=["Transactions"])
-async def get_all_transactions():
+async def get_all_transactions(token: Annotated[str, Depends(oauth2_scheme)]):
     try:
         # Connect to an existing database
         conn = pg.connect(f"host=db dbname={os.getenv('POSTGRES_DB')} user={os.getenv('POSTGRES_USER')} password={os.getenv('POSTGRES_PASSWORD')}")
@@ -217,7 +287,7 @@ async def get_all_transactions():
 
 
 @app.post("/transactions/add", response_model=Transaction, tags=["Transactions"])
-async def add_transaction(transaction: Transaction):
+async def add_transaction(token: Annotated[str, Depends(oauth2_scheme)], transaction: Transaction):
     # Connect to an existing database
     conn = pg.connect(f"host=db dbname={os.getenv('POSTGRES_DB')} user={os.getenv('POSTGRES_USER')} password={os.getenv('POSTGRES_PASSWORD')}")
     try:
@@ -269,7 +339,7 @@ async def add_transaction(transaction: Transaction):
         conn.close()
 
 @app.put("/transactions/update/{transaction_id}", response_model=Transaction, tags=["Transactions"])
-async def update_transaction(transaction_id: int, transaction: Transaction):
+async def update_transaction(token: Annotated[str, Depends(oauth2_scheme)], transaction_id: int, transaction: Transaction):
     # Connect to an existing database
     conn = pg.connect(f"host=db dbname={os.getenv('POSTGRES_DB')} user={os.getenv('POSTGRES_USER')} password={os.getenv('POSTGRES_PASSWORD')}")
     try:
@@ -323,7 +393,7 @@ async def update_transaction(transaction_id: int, transaction: Transaction):
         conn.close()
 
 @app.post("/transactions/remove/{transaction_id}", response_model=Transaction, tags=["Transactions"])
-async def remove_transaction(transaction_id: int):
+async def remove_transaction(token: Annotated[str, Depends(oauth2_scheme)],transaction_id: int):
     # Connect to an existing database
     conn = pg.connect(f"host=db dbname={os.getenv('POSTGRES_DB')} user={os.getenv('POSTGRES_USER')} password={os.getenv('POSTGRES_PASSWORD')}")
     # Open a cursor to perform database operations
@@ -343,7 +413,7 @@ async def remove_transaction(transaction_id: int):
     return {"id": transaction_id}
 
 @app.put("/transactions/import", response_model=List[Transaction], tags=["Transactions"])
-async def upload_csv_transactions(file: UploadFile = File(...)):
+async def upload_csv_transactions(token: Annotated[str, Depends(oauth2_scheme)], file: UploadFile = File(...)):
     if not file.filename.endswith('.csv'):
         raise HTTPException(status_code=400, detail="Invalid file type")
 

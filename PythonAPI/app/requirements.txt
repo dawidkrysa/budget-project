@@ -7,6 +7,9 @@ jupyter                # For running Jupyter notebooks
 matplotlib             # For creating plots and visualizations
 voila                  # For converting Jupyter notebooks into standalone web applications
 python-multipart       # For handling file uploads in FastAPI
+pyjwt                  # For handling JSON Web Tokens (JWT) for authentication
+passlib                # For password hashing and verification
+cryptography           # For secure data encryption and decryption
 
 # Additional libraries
 numpy                  # For numerical computing and handling large datasets
