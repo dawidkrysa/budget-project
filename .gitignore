@@ -8,6 +8,7 @@ __pycache__/
 
 # Distribution / packaging
 .PythonAPI
+.Proxy
 build/
 develop-eggs/
 dist/
@@ -172,6 +173,8 @@ cython_debug/
 
 # Database files
 /Postgres/data
+/Proxy/*
+/DuckDNS/*
 
 # VS Code settings
 /.vscode
