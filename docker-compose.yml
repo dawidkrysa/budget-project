@@ -1,5 +1,11 @@
-version: "3.9"
+networks:
+  scoobydoo:
+    name: scoobydoo
+    driver: bridge
+
 services:
+
+
   db:
     image: postgres:latest
     container_name: postgres-db
@@ -12,6 +18,8 @@ services:
       - ./Postgres/init.sql:/docker-entrypoint-initdb.d/init.sql
     ports:
       - "5432:5432"
+    networks:
+      - scoobydoo
 
   python:
     image: python:3.13.1
@@ -28,3 +36,53 @@ services:
       - db
     command: >
       /bin/sh -c "pip install --upgrade pip && pip install -r requirements.txt && uvicorn app:app --reload --host 0.0.0.0 --port 8000"
+    networks:
+      - scoobydoo
+
+  proxy:
+    image: 'jc21/nginx-proxy-manager:latest'
+    restart: unless-stopped
+    container_name: nginx-proxy-manager
+    ports:
+      # These ports are in format <host-port>:<container-port>
+      - '80:80' # Public HTTP Port
+      - '443:443' # Public HTTPS Port
+      - '81:81' # Admin Web Port
+      # Add any other Stream port you want to expose
+      # - '21:21' # FTP
+    environment:
+      # Postgres parameters:
+      DB_POSTGRES_HOST: 'db'
+      DB_POSTGRES_PORT: '5432'
+      DB_POSTGRES_USER: ${POSTGRES_USER}
+      DB_POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      DB_POSTGRES_DB: ${POSTGRES_DB}
+      INITIAL_ADMIN_EMAIL: ${INITIAL_ADMIN_EMAIL}
+      INITIAL_ADMIN_PASSWORD: ${INITIAL_ADMIN_PASSWORD}
+      # Uncomment this if IPv6 is not enabled on your host
+      # DISABLE_IPV6: 'true'
+    volumes:
+      - ./Proxy/data:/data
+      - ./Proxy/letsencrypt:/etc/letsencrypt
+    depends_on:
+      - db
+    networks:
+      - scoobydoo
+  
+  duckdns:
+    image: linuxserver/duckdns
+    container_name: duckdns
+    restart: always
+    environment:
+      - SUBDOMAINS= ${DUCKDNS_SUBDOMAIN}
+      - TOKEN= ${DUCKDNS_TOKEN}
+      - LOG_FILE=true  # Enable logging
+    volumes:
+      - ./DuckDNS/logs:/config/logs  # Mount logs directory
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "3"
+    networks:
+      - scoobydoo
