@@ -1,14 +1,16 @@
 networks:
   scoobydoo:
     name: scoobydoo
+    enable_ipv6: true
     driver: bridge
+    driver_opts:
+      com.docker.network.enable_ipv6: "true"
 
 services:
-
-
   db:
     image: postgres:latest
     container_name: postgres-db
+    restart: unless-stopped
     environment:
       POSTGRES_USER: ${POSTGRES_USER}
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
@@ -16,22 +18,27 @@ services:
     volumes:
       - ./Postgres/data:/var/lib/postgresql/data
       - ./Postgres/init.sql:/docker-entrypoint-initdb.d/init.sql
-    ports:
-      - "5432:5432"
+    # ports:
+    #   - "5432:5432"
+    expose:
+      - "5432"
     networks:
       - scoobydoo
 
   python:
     image: python:3.13.1
     container_name: python_dev
+    restart: unless-stopped
     volumes:
       - ./PythonAPI/app:/app
       - ./.env:/app/.env:ro  # Mounting the .env file from the main directory to the container
     working_dir: /app
     stdin_open: true
     tty: true
-    ports:
-      - "8000:8000"  # Expose port 8888 for Jupyter Notebook
+    # ports:
+    #   - "8000:8000"  # Expose port 8888 for Jupyter Notebook
+    expose:
+      - "8000"  # Expose port 8000 for FastAPI
     depends_on:
       - db
     command: >
@@ -48,8 +55,6 @@ services:
       - '80:80' # Public HTTP Port
       - '443:443' # Public HTTPS Port
       - '81:81' # Admin Web Port
-      # Add any other Stream port you want to expose
-      # - '21:21' # FTP
     environment:
       # Postgres parameters:
       DB_POSTGRES_HOST: 'db'
@@ -59,15 +64,16 @@ services:
       DB_POSTGRES_DB: ${POSTGRES_DB}
       INITIAL_ADMIN_EMAIL: ${INITIAL_ADMIN_EMAIL}
       INITIAL_ADMIN_PASSWORD: ${INITIAL_ADMIN_PASSWORD}
+      VIRTUAL_HOST: ${VIRTUAL_HOST}    
       # Uncomment this if IPv6 is not enabled on your host
       # DISABLE_IPV6: 'true'
+    networks:
+      - scoobydoo
     volumes:
       - ./Proxy/data:/data
       - ./Proxy/letsencrypt:/etc/letsencrypt
     depends_on:
       - db
-    networks:
-      - scoobydoo
   
   duckdns:
     image: linuxserver/duckdns
