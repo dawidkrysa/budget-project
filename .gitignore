@@ -12,8 +12,8 @@ __pycache__/
 
 # Ignore Angular build output
 /Angular/dist/
-/Angular/.angular/cache/
-/Angular/.angular/config.json
+/Angular/.angular/
+/Angular/README.md
 
 # Node dependencies
 /Angular/node_modules/
