@@ -122,6 +122,71 @@ async def get_all_categories(token: Annotated[str, Depends(oauth2_scheme)]):
         conn.close()
     return result
 
+# POST endpoint to add a new category
+@app.post("/categories/add", response_model=Category, tags=["Categories"])
+async def add_category(token: Annotated[str, Depends(oauth2_scheme)], category: Annotated[Category, Body(
+    examples=[
+        {
+             "main_category_name": "Main category name",
+             "category_name": "Category name"
+        }
+    ]
+)]):
+    # Connect to an existing database
+    conn = pg.connect(f"host=db dbname={os.getenv('POSTGRES_DB')} user={os.getenv('POSTGRES_USER')} password={os.getenv('POSTGRES_PASSWORD')}")
+    try:
+        # Open a cursor to perform database operations
+        cur = conn.cursor()
+        # Check if category name already exists
+        cur.execute("SELECT id FROM categories WHERE name = %s or name = %s", (category.category_name,category.category_name,))
+        if cur.fetchone() is not None:
+            raise HTTPException(status_code=400, detail="Category name already exists")
+
+        # Insert the new category
+        cur.execute(
+            "INSERT INTO categories (name,main_category_id) VALUES (%s,(Select Id from categories where name = %s)) ON CONFLICT DO NOTHING RETURNING id",
+            (category.category_name,category.main_category_name,)
+        )
+        # Get the id of the newly added category
+        category_id = cur.fetchone()
+        # Commit the transaction
+        conn.commit()
+        # Return the category object with the new id
+        return {"id": category_id, "category_name": category.category_name, "main_category_name": category.main_category_name}
+    except Exception as e:
+        conn.rollback()
+        raise HTTPException(status_code=500, detail=str(e))
+    finally:
+        cur.close()
+        conn.close()
+        
+# PUT endpoint to remove category
+@app.put("/categories/remove/{category_id}", tags=["Categories"])
+async def remove_category(token: Annotated[str, Depends(oauth2_scheme)], category_id: int):
+    # Connect to an existing database
+    conn = pg.connect(f"host=db dbname={os.getenv('POSTGRES_DB')} user={os.getenv('POSTGRES_USER')} password={os.getenv('POSTGRES_PASSWORD')}")
+    try:
+        # Open a cursor to perform database operations
+        cur = conn.cursor()
+        # Check if the category exists
+        cur.execute("SELECT id FROM categories WHERE id = %s", (category_id,))
+        if cur.fetchone() is None:
+            raise HTTPException(status_code=404, detail="Category not found")
+        
+        # Remove the category
+        cur.execute(
+            "DELETE FROM categories WHERE id = %s",
+            (category_id,)
+        )
+        # Commit the transaction
+        conn.commit()
+    except Exception as e:
+        conn.rollback()
+        raise HTTPException(status_code=500, detail=str(e))
+    finally:
+        cur.close()
+        conn.close()
+
 # ----------------- Account -----------------
 
 class Account(BaseModel):
