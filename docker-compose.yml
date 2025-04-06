@@ -52,9 +52,8 @@ services:
     restart: unless-stopped
     container_name: nginx-proxy-manager
     ports:
-      - '80:80' # Public HTTP Port
       - '443:443' # Public HTTPS Port
-      - '81:81' # Admin Web Port
+      # - '81:81' # Admin Web Port. Uncomment if you want to access the admin panel
     environment:
       DB_POSTGRES_HOST: 'db'
       DB_POSTGRES_PORT: '5432'
