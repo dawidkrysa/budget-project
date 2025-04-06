@@ -14,12 +14,15 @@ services:
     environment:
       POSTGRES_USER: ${POSTGRES_USER}
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
-      POSTGRES_DB: ${POSTGRES_DB}
+      POSTGRES_DB: ${POSTGRES_DB}'
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
     volumes:
-      - ./Postgres/data:/var/lib/postgresql/data
+      - postgres-data:/var/lib/postgresql/data
       - ./Postgres/init.sql:/docker-entrypoint-initdb.d/init.sql
-    # ports:
-    #   - "5432:5432"
     expose:
       - "5432"
     networks:
@@ -30,13 +33,11 @@ services:
     container_name: python_dev
     restart: unless-stopped
     volumes:
-      - ./PythonAPI/app:/app
+      - ./PythonAPI:/app
       - ./.env:/app/.env:ro  # Mounting the .env file from the main directory to the container
     working_dir: /app
     stdin_open: true
     tty: true
-    # ports:
-    #   - "8000:8000"  # Expose port 8888 for Jupyter Notebook
     expose:
       - "8000"  # Expose port 8000 for FastAPI
     depends_on:
@@ -51,12 +52,10 @@ services:
     restart: unless-stopped
     container_name: nginx-proxy-manager
     ports:
-      # These ports are in format <host-port>:<container-port>
       - '80:80' # Public HTTP Port
       - '443:443' # Public HTTPS Port
       - '81:81' # Admin Web Port
     environment:
-      # Postgres parameters:
       DB_POSTGRES_HOST: 'db'
       DB_POSTGRES_PORT: '5432'
       DB_POSTGRES_USER: ${POSTGRES_USER}
@@ -65,13 +64,11 @@ services:
       INITIAL_ADMIN_EMAIL: ${INITIAL_ADMIN_EMAIL}
       INITIAL_ADMIN_PASSWORD: ${INITIAL_ADMIN_PASSWORD}
       VIRTUAL_HOST: ${VIRTUAL_HOST}    
-      # Uncomment this if IPv6 is not enabled on your host
-      # DISABLE_IPV6: 'true'
     networks:
       - scoobydoo
     volumes:
-      - ./Proxy/data:/data
-      - ./Proxy/letsencrypt:/etc/letsencrypt
+      - proxy-data:/data
+      - proxy-letsencrypt:/etc/letsencrypt
     depends_on:
       - db
   
@@ -84,7 +81,7 @@ services:
       - TOKEN= ${DUCKDNS_TOKEN}
       - LOG_FILE=true  # Enable logging
     volumes:
-      - ./DuckDNS/logs:/config/logs  # Mount logs directory
+      - duckdns-logs:/config/logs  # Mount logs directory
     logging:
       driver: "json-file"
       options:
@@ -92,3 +89,24 @@ services:
         max-file: "3"
     networks:
       - scoobydoo
+
+  angular-app:
+    image: node:22.14
+    container_name: angular-app
+    working_dir: /app
+    volumes:
+      - ./Angular:/app
+    expose:
+      - "4200"
+    command: >
+      sh -c "npm ci && npm install -g @angular/cli && ng serve --host 0.0.0.0 --port 4200 --public-host='dawidkrysa.duckdns.org' --disable-host-check"
+    environment:
+      - NODE_ENV=development
+    networks:
+      - scoobydoo
+
+volumes:
+  postgres-data:
+  proxy-data:
+  proxy-letsencrypt:
+  duckdns-logs:
