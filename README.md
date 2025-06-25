@@ -3,9 +3,6 @@
 
 
 <!-- PROJECT SHIELDS -->
-[![Contributors][contributors-shield]][contributors-url]
-[![Forks][forks-shield]][forks-url]
-[![Stargazers][stars-shield]][stars-url]
 [![Issues][issues-shield]][issues-url]
 [![project_license][license-shield]][license-url]
 [![LinkedIn][linkedin-shield]][linkedin-url]
@@ -60,6 +57,23 @@ A self-hosted personal budget tracking application inspired by **YNAB**, built w
 [![Python][Python]][Python-url]
 [![Docker][Docker]][Docker-url]
 
+<p align="right">(<a href="#readme-top">back to top</a>)</p>
+
+## 📦 Project Structure
+
+```
+budget-project/
+├── Python/
+│   ├── app.py                # Flask app entry point
+│   ├── requirements.txt      # Python dependencies
+│   └── templates/            # Jinja2 HTML templates
+├── Postgres/
+│   ├── init.sql              # DB schema
+│   ├── DB.erd.json           # DB ERD Diagram
+│   └── init_data.sql         # Sample seed data
+├── docker-compose.yml        # Docker orchestration
+└── README.md                 # Project documentation
+```
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
 
 <!-- GETTING STARTED -->
@@ -160,6 +174,8 @@ _For more examples, please refer to the [Documentation](https://example.com)_
 - [ ] Forgot password & reset flow
 - [ ] User profile page (change email/name)
 
+<p align="right">(<a href="#readme-top">back to top</a>)</p>
+
 ## 🧠 Planned Features
 
 See the [open issues](https://github.com/dawidkrysa/budget-project/issues) for a full list of proposed features (and known issues).
@@ -172,6 +188,8 @@ See the [open issues](https://github.com/dawidkrysa/budget-project/issues) for a
 - **Database:** PostgreSQL
 - **DevOps:** Docker, Docker Compose
 - **Frontend:** HTML (Jinja templates, Bootstrap planned)
+
+<p align="right">(<a href="#readme-top">back to top</a>)</p>
 
 <!-- LICENSE -->
 ## 📄 License
@@ -202,16 +220,10 @@ Feel free to reach out via GitHub or LinkedIn.
 
 <!-- MARKDOWN LINKS & IMAGES -->
 <!-- https://www.markdownguide.org/basic-syntax/#reference-style-links -->
-[contributors-shield]: https://img.shields.io/github/contributors/dawidkrysa/budget-project.svg?style=for-the-badge
-[contributors-url]: https://github.com/dawidkrysa/budget-project/graphs/contributors
-[forks-shield]: https://img.shields.io/github/forks/dawidkrysa/budget-project.svg?style=for-the-badge
-[forks-url]: https://github.com/dawidkrysa/budget-project/network/members
-[stars-shield]: https://img.shields.io/github/stars/dawidkrysa/budget-project.svg?style=for-the-badge
-[stars-url]: https://github.com/dawidkrysa/budget-project/stargazers
 [issues-shield]: https://img.shields.io/github/issues/dawidkrysa/budget-project.svg?style=for-the-badge
 [issues-url]: https://github.com/dawidkrysa/budget-project/issues
 [license-shield]: https://img.shields.io/github/license/dawidkrysa/budget-project.svg?style=for-the-badge
-[license-url]: https://github.com/dawidkrysa/budget-project/blob/master/LICENSE.txt
+[license-url]: https://github.com/dawidkrysa/budget-project/blob/master/LICENSE
 [linkedin-shield]: https://img.shields.io/badge/-LinkedIn-black.svg?style=for-the-badge&logo=linkedin&colorB=555
 [linkedin-url]: https://linkedin.com/in/dawid-krysa
 [product-screenshot]: images/screenshot.png
