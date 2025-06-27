@@ -42,6 +42,10 @@ services:
     tty: true
     expose:
       - "8000"  # Expose port 8000 for Flask
+    environment:
+      FLASK_APP: ${FLASK_APP}
+      FLASK_ENV: ${FLASK_ENV}
+      FLASK_DEBUG: ${FLASK_DEBUG}
     depends_on:
       - db
     command: >

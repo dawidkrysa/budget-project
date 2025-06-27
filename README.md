@@ -67,6 +67,7 @@ budget-project/
 │   ├── app.py                # Flask app entry point
 │   ├── requirements.txt      # Python dependencies
 │   └── templates/            # Jinja2 HTML templates
+│       └── icons/            # SVG Icons
 ├── Postgres/
 │   ├── init.sql              # DB schema
 │   ├── DB.erd.json           # DB ERD Diagram
@@ -102,6 +103,11 @@ INITIAL_ADMIN_PASSWORD=dawidkrysa
 DUCKDNS_SUBDOMAIN=dawidkrysa
 DUCKDNS_TOKEN="..."  # your duckDNS token
 VIRTUAL_HOST=dawidkrysa.duckdns.org
+
+# Flask
+FLASK_ENV=development
+FLASK_DEBUG=1
+FLASK_APP=app.py
 ```
 
 ### Installation
