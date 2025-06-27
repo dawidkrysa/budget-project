@@ -153,7 +153,7 @@ _For more examples, please refer to the [Documentation](https://example.com)_
   - [ ] Categories (with main/sub support)
   - [ ] Transactions
   - [ ] Budget assignments per category/month
-- [ ] Basic dashboard (list of transactions, budget overview)
+- [X] Basic dashboard (list of transactions, budget overview)
 
 ### 🧱 Backend Tasks
 - [ ] Flask blueprints for modular code
