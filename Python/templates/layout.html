@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>{% block title %}Dashboard{% endblock %}</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-gray-100 h-screen flex">
+
+    <!-- Sidebar -->
+    <aside class="w-20 bg-white border-r border-gray-200 flex flex-col items-center justify-between py-4">
+
+        <!-- Top Spacer -->
+        <div></div>
+
+        <!-- Icons -->
+        <div class="flex flex-col items-center gap-6">
+            <!-- Home Icon -->
+            <a href="{{ url_for('web.home') }}" class="p-2 block rounded-xl {% if active_page == 'home' %}bg-blue-100 block{% else %}text-gray-400 hover:text-blue-500 block{% endif %}">
+                {% include "icons/home.html" %}
+            </a>
+
+            <!-- Transactions Icon -->
+            <a href="{{ url_for('web.transactions') }}" class="p-2 block rounded-xl {% if active_page == 'transactions' %}bg-blue-100 block{% else %}text-gray-400 hover:text-blue-500 block{% endif %}">
+                {% include "icons/list.html" %}
+            </a>
+
+            <!-- Reports Icon -->
+            <a href="{{ url_for('web.reports') }}" class="p-2 block rounded-xl {% if active_page == 'reports' %}bg-blue-100 block{% else %}text-gray-400 hover:text-blue-500 block{% endif %}">
+                {% include "icons/chart-bar.html" %}
+            </a>
+        </div>
+
+        <div class="flex flex-col items-center">
+            <!-- Separator -->
+            <div class="w-12 border-t border-gray-300 mx-auto mb-4"></div>
+
+            <!-- Bottom: Settings Icon -->
+            <a href="{{ url_for('web.settings') }}" class="p-2 block rounded-xl  {% if active_page == 'settings' %}bg-blue-100 block{% else %}text-gray-400 hover:text-blue-500 block{% endif %}">
+                {% include "icons/cog.html" %}
+            </a>
+        </div>
+    </aside>
+
+    <!-- Main Content -->
+    <main class="flex-1 p-6">
+        <div id="mainContent">
+            {% block content %}{% endblock %}
+        </div>
+    </main>
+</body>
+</html>
