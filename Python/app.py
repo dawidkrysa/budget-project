@@ -1,11 +1,7 @@
-from dotenv import load_dotenv
-import psycopg2 as pg
-from flask import Flask, render_template, request, redirect, url_for
+from flask import Flask
+from web.views import web
+from api.endpoints import api
 
-load_dotenv("/app/.env")
 app = Flask(__name__)
-@app.route("/")
-def home():
-    return render_template("index.html")
-
-#     conn = pg.connect(f"host=db dbname={os.getenv('POSTGRES_DB')} user={os.getenv('POSTGRES_USER')} password={os.getenv('POSTGRES_PASSWORD')}")
+app.register_blueprint(web)
+app.register_blueprint(api)
