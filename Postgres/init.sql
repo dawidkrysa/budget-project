@@ -49,9 +49,9 @@ CREATE TABLE IF NOT EXISTS users
   id   bigint GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
   login text   NOT NULL UNIQUE,
   password text   NOT NULL,
-  active boolean DEFAULT false
+  active boolean DEFAULT false,
   email text NOT NULL UNIQUE,
-  CONSTRAINT email_check CHECK (email LIKE '%_@__%.__%')
+  CONSTRAINT email_check CHECK (email LIKE '%_@__%.__%'),
   name text NOT NULL,
   CONSTRAINT name_check CHECK (name != '')
 );
