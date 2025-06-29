@@ -2,12 +2,10 @@
 requests               # For making HTTP requests
 pandas                 # For handling CSV files and data processing
 psycopg2               # PostgreSQL adapter for Python (psycopg2)
-psycopg2-binary        # Binary version of psycopg2 for compatibility
-jupyter                # For running Jupyter notebooks
 matplotlib             # For creating plots and visualizations
 flask
+flask_sqlalchemy
 cryptography           # For secure data encryption and decryption
-Jinja2
 
 # Additional libraries
 numpy                  # For numerical computing and handling large datasets

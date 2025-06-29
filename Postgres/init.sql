@@ -103,6 +103,7 @@ ORDER BY b.month, b.year, mc.name, c.name, b.assigned
 -- Create a view that shows all transactions with their account, payee, category, memo, and amount.
 CREATE OR REPLACE VIEW transactions_view AS
 SELECT
+    ROW_NUMBER() OVER (ORDER BY t.date) as Id,
     t.date, a.name as account_name, p.name as payee_name, c.name as category_name, t.memo, t.amount
 FROM transactions t
 JOIN categories c ON t.category_id = c.id

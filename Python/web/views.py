@@ -1,6 +1,7 @@
+#!/usr/bin/env python3
 from flask import Blueprint, render_template
-import psycopg2 as pg
-import os
+from sys import path
+from models.models import Transaction
 
 web = Blueprint('web', __name__)
 
@@ -11,31 +12,30 @@ def home():
 @web.route('/transactions')
 def transactions():
     try:
-        conn = pg.connect(f"host=db dbname={os.getenv('POSTGRES_DB')} user={os.getenv('POSTGRES_USER')} password={os.getenv('POSTGRES_PASSWORD')}")
-        cursor = conn.cursor()
+        # ORM query
+        transactions_view = Transaction.query.all()
 
-        # simple all row query
-        cursor.execute("""
-                       SELECT date AS DATE,
-                              account_name                                  AS ACCOUNT,
-                              payee_name                                    AS PAYEE,
-                              category_name                                 AS CATEGORY,
-                              memo                                          AS NOTE,
-                              amount                                        AS AMOUNT
-                       FROM transactions_view
-                       """)
+        headings = ('Date', 'Account', 'Payee', 'Category', 'Note', 'Amount')
+        data = tuple(
+            (t.date, t.account_name, t.payee_name, t.category_name, t.memo, t.amount)
+            for t in transactions_view
+        )
 
-        # get all headings and data
-        headings = tuple([desc[0].capitalize() for desc in cursor.description])
-        data = cursor.fetchall()
+        return render_template(
+            "transactions.html",
+            transaction_headings=headings,
+            transaction_data=data,
+            active_page='transactions'
+        )
 
-        cursor.close()
-        conn.close()
-
-        return render_template("transactions.html", transaction_headings=headings, transaction_data=data, active_page='transactions')
-    except pg.Error as e:
+    except Exception as e:
         print("Database error:", e)
-        return render_template("transactions.html", transaction_headings=None, transaction_data=None, active_page='transactions')
+        return render_template(
+            "transactions.html",
+            transaction_headings=None,
+            transaction_data=None,
+            active_page='transactions'
+        )
 
 @web.route('/reports')
 def reports():
