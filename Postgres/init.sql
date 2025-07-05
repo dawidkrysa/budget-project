@@ -98,7 +98,7 @@ LEFT JOIN transactions t ON b.category_id = t.category_id
 JOIN categories c ON b.category_id = c.id
 JOIN categories mc ON c.main_category_id = mc.id
 GROUP BY b.month, b.year, mc.name, c.name, b.assigned
-ORDER BY b.month, b.year, mc.name, c.name, b.assigned
+ORDER BY b.month, b.year, mc.name, c.name, b.assigned;
 
 -- Create a view that shows all transactions with their account, payee, category, memo, and amount.
 CREATE OR REPLACE VIEW transactions_view AS
@@ -108,4 +108,4 @@ SELECT
 FROM transactions t
 JOIN categories c ON t.category_id = c.id
 JOIN payees p ON t.payee_id = p.id
-JOIN accounts a ON t.account_id = a.id
+JOIN accounts a ON t.account_id = a.id;
