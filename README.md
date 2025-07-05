@@ -108,6 +108,7 @@ VIRTUAL_HOST=dawidkrysa.duckdns.org
 FLASK_ENV=development
 FLASK_DEBUG=1
 FLASK_APP=app.py
+FLASK_SECRET_KEY="..." # your secret key
 ```
 
 ### Installation
@@ -151,19 +152,19 @@ _For more examples, please refer to the [Documentation](https://example.com)_
   - [ ] Accounts
   - [ ] Payees
   - [ ] Categories (with main/sub support)
-  - [ ] Transactions
+  - [X] Transactions
   - [ ] Budget assignments per category/month
 - [X] Basic dashboard (list of transactions, budget overview)
 
 ### 🧱 Backend Tasks
-- [ ] Flask blueprints for modular code
-- [ ] PostgreSQL schema (based on ERD)
-- [ ] Seed scripts for dev setup (`init_data.sql`)
-- [ ] Use SQLAlchemy or raw SQL (TBD)
+- [X] Flask blueprints for modular code
+- [X] PostgreSQL schema (based on ERD)
+- [X] Seed scripts for dev setup (`init_data.sql`)
+- [X] Use SQLAlchemy
 
 ### 💻 Frontend Tasks
-- [ ] Jinja2 templates using Bootstrap
-- [ ] Transaction form with validation
+- [X] Jinja2 templates using Bootstrap
+- [X] Transaction form with validation
 - [ ] Monthly budget editor
 
 ### 🔄 Budgeting Features
