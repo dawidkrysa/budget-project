@@ -1,7 +1,20 @@
 #!/usr/bin/env python3
 from extensions.database import db
 
+
+# -------------------------------
+# Account Model
+# -------------------------------
+
 class Account(db.Model):
+    """
+    Represents a financial account.
+    Attributes:
+        id (int): Primary key.
+        name (str): Account name, unique and required.
+        hidden (bool): Flag to hide the account.
+        transactions (list): List of associated Transaction objects.
+    """
     __tablename__ = 'accounts'
 
     id = db.Column(db.Integer, primary_key=True)
@@ -11,7 +24,23 @@ class Account(db.Model):
     transactions = db.relationship('Transaction', back_populates='account')
 
 
+# -------------------------------
+# Category Model
+# -------------------------------
+
 class Category(db.Model):
+    """
+    Represents a transaction category, optionally linked to a main category.
+    Attributes:
+        id (int): Primary key.
+        name (str): Category name, unique and required.
+        main_category_id (int): Foreign key to parent category.
+        hidden (bool): Flag to hide the category.
+        main_category (Category): Parent category relationship.
+        subcategories (list): List of subcategories.
+        transactions (list): List of associated Transaction objects.
+        budgets (list): List of associated Budget objects.
+    """
     __tablename__ = 'categories'
 
     id = db.Column(db.Integer, primary_key=True)
@@ -24,7 +53,21 @@ class Category(db.Model):
     budgets = db.relationship('Budget', back_populates='category')
 
 
+# -------------------------------
+# Budget Model
+# -------------------------------
+
 class Budget(db.Model):
+    """
+    Represents budget allocation for a category in a specific month and year.
+    Attributes:
+        id (int): Primary key.
+        month (int): Month of the budget.
+        year (int): Year of the budget.
+        assigned (Decimal): Amount assigned to the budget.
+        category_id (int): Foreign key to the associated category.
+        category (Category): Relationship to Category model.
+    """
     __tablename__ = 'budget'
 
     id = db.Column(db.Integer, primary_key=True)
@@ -36,7 +79,19 @@ class Budget(db.Model):
     category = db.relationship('Category', back_populates='budgets')
 
 
+# -------------------------------
+# Payee Model
+# -------------------------------
+
 class Payee(db.Model):
+    """
+    Represents a payee entity for transactions.
+    Attributes:
+        id (int): Primary key.
+        name (str): Payee name, unique and required.
+        transactions (list): List of associated Transaction objects.
+    """
+
     __tablename__ = 'payees'
 
     id = db.Column(db.BigInteger, primary_key=True)
@@ -45,10 +100,34 @@ class Payee(db.Model):
     transactions = db.relationship('Transaction', back_populates='payee')
 
     def to_dict(self):
+        """
+        Converts the Payee object to a dictionary.
+        Returns:
+            dict: Dictionary with column names as keys and attribute values.
+        """
         return {c.name: getattr(self, c.name) for c in self.__table__.columns}
 
 
+# -------------------------------
+# Transaction Model
+# -------------------------------
+
 class Transaction(db.Model):
+    """
+    Represents a financial transaction.
+    Attributes:
+        id (int): Primary key.
+        date (date): Date of the transaction.
+        amount (Decimal): Transaction amount.
+        category_id (int): Foreign key to Category.
+        account_id (int): Foreign key to Account.
+        memo (str): Optional memo for the transaction.
+        payee_id (int): Foreign key to Payee.
+        category (Category): Relationship to Category.
+        account (Account): Relationship to Account.
+        payee (Payee): Relationship to Payee.
+    """
+
     __tablename__ = 'transactions'
 
     id = db.Column(db.BigInteger, primary_key=True)
@@ -64,6 +143,11 @@ class Transaction(db.Model):
     payee = db.relationship('Payee', back_populates='transactions')
 
     def to_dict(self):
+        """
+        Converts the Transaction object to a dictionary for JSON serialization.
+        Returns:
+            dict: Dictionary representation of the transaction.
+        """
         return {
             'id': self.id,
             'date': self.date.isoformat() if self.date else None,
@@ -84,6 +168,11 @@ class Transaction(db.Model):
         }
 
     def delete(self):
+        """
+        Deletes the transaction from the database.
+        Returns:
+            tuple: (success (bool), error_message (str or None))
+        """
         try:
             db.session.delete(self)
             db.session.commit()
@@ -93,9 +182,21 @@ class Transaction(db.Model):
             return False, str(e)
 
 
-
+# -------------------------------
+# User Model
+# -------------------------------
 
 class User(db.Model):
+    """
+    Represents a user of the system.
+    Attributes:
+        id (int): Primary key.
+        login (str): Unique login identifier.
+        password (str): User password (hashed).
+        active (bool): User activation status.
+        email (str): Unique email address.
+        name (str): User's full name.
+    """
     __tablename__ = 'users'
 
     id = db.Column(db.BigInteger, primary_key=True)

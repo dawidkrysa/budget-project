@@ -1,9 +1,14 @@
+/* ===========================
+   Table cell and header styling
+=========================== */
 table td,
 table th {
-    white-space: nowrap;
+    white-space: nowrap; /* Prevent text wrapping in table cells and headers */
 }
 
-/* Sidebar desktop */
+/* ===========================
+   Sidebar styles for desktop
+=========================== */
 aside.sidebar {
     flex-basis: 2%;
     border-end: 1px solid #dee2e6;
@@ -29,9 +34,12 @@ aside.sidebar .bottom-icons {
 aside.sidebar .separator {
     border-top: 1px solid #dee2e6;
     width: 75%;
-    margin: 1rem auto 1rem auto;
+    margin: 1rem auto;
 }
 
+/* ===========================
+   Icon expand button styles
+=========================== */
 .icon-expand {
   position: relative;
   display: inline-flex;
@@ -45,7 +53,7 @@ aside.sidebar .separator {
   content: "";
   position: absolute;
   inset: 0;
-  border-radius: 0.25rem; /* same as Bootstrap rounded */
+  border-radius: 0.25rem; /* Bootstrap rounded */
   box-shadow: inset 0 0 0 1px #ffffff; /* Bootstrap primary */
   pointer-events: none;
   transition: box-shadow 0.3s ease;
@@ -82,9 +90,9 @@ aside.sidebar .separator {
   pointer-events: none;
 }
 
-
-
-/* Responsive small screens */
+/* ===========================
+   Responsive styles for small screens (max-width: 576px)
+=========================== */
 @media (max-width: 576px) {
     body.d-flex {
         flex-direction: column !important;
@@ -120,7 +128,7 @@ aside.sidebar .separator {
         flex-shrink: 0;
     }
 
-    /* Both groups become horizontal rows with no margins */
+    /* Make icon groups horizontal and remove margins */
     aside.sidebar .top-icons,
     aside.sidebar .bottom-icons {
         flex-direction: row !important;
@@ -130,7 +138,7 @@ aside.sidebar .separator {
         align-items: center;
     }
 
-    /* Hide separator on mobile */
+    /* Hide separator line on mobile */
     aside.sidebar .separator {
         display: none;
     }
@@ -138,6 +146,7 @@ aside.sidebar .separator {
     a {
         padding: 6px;
     }
+
     a > svg {
         width: 24px;
         height: 24px;
