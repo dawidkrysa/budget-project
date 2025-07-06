@@ -74,7 +74,7 @@ saveBtn.addEventListener('click', () => {
   });
 
   // Call your API (adjust URL and options as needed)
-  fetch('/api/v1/transactions/add', {
+  fetch('/api/v1/transactions', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify(jsonData),
