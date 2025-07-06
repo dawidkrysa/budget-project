@@ -26,15 +26,63 @@ aside.sidebar .bottom-icons {
     width: 100%;
 }
 
-aside.sidebar .bottom-icons {
-    align-items: center;
-}
-
 aside.sidebar .separator {
     border-top: 1px solid #dee2e6;
     width: 75%;
     margin: 1rem auto 1rem auto;
 }
+
+.icon-expand {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: transform 0.15s ease;
+}
+
+.icon-expand::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: 0.25rem; /* same as Bootstrap rounded */
+  box-shadow: inset 0 0 0 1px #ffffff; /* Bootstrap primary */
+  pointer-events: none;
+  transition: box-shadow 0.3s ease;
+  z-index: 1;
+}
+
+.icon-expand::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: 0.25rem;
+  background: #0d6efd; /* Bootstrap primary */
+  box-shadow: inset 0 0 0 0 #fff; /* start with no white overlay */
+  opacity: 0; /* completely invisible */
+  transition: box-shadow 0.3s ease, opacity 0.3s ease;
+  z-index: 0;
+}
+
+.icon-expand:hover,
+.icon-expand:focus {
+  transform: scale(1.1);
+}
+
+.icon-expand:hover::before,
+.icon-expand:focus::before {
+  box-shadow: inset 0 0 0 1px #fff;
+  opacity: 0.3;
+}
+
+.icon-expand svg {
+  position: relative;
+  width: 24px;
+  height: 24px;
+  pointer-events: none;
+}
+
+
 
 /* Responsive small screens */
 @media (max-width: 576px) {
@@ -57,7 +105,7 @@ aside.sidebar .separator {
         bottom: 0;
         left: 0;
         right: 0;
-        height: 4.5rem;
+        height: 3.5rem;
         border-top: 1px solid #dee2e6;
         background: white;
         padding: 0 1rem;
@@ -85,5 +133,13 @@ aside.sidebar .separator {
     /* Hide separator on mobile */
     aside.sidebar .separator {
         display: none;
+    }
+
+    a {
+        padding: 6px;
+    }
+    a > svg {
+        width: 24px;
+        height: 24px;
     }
 }
