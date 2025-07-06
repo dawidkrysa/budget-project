@@ -3,7 +3,7 @@ transactionModal.addEventListener('shown.bs.modal', function () {
     const contentDiv = document.getElementById('transactionContent');
     contentDiv.innerHTML = 'Loading...';
 
-    fetch('/api/v1/transaction_form_data')
+    fetch('/api/v1/transactions/form-data')
         .then(res => res.json())
         .then(data => {
             // Build the form HTML dynamically:
