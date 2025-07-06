@@ -150,7 +150,7 @@ _For more examples, please refer to the [Documentation](https://example.com)_
 - [ ] User authentication (login, registration)
 - [ ] Create/read/update/delete (CRUD) for:
   - [ ] Accounts
-  - [ ] Payees
+  - [X] Payees
   - [ ] Categories (with main/sub support)
   - [X] Transactions
   - [ ] Budget assignments per category/month

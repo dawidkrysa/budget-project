@@ -44,6 +44,9 @@ class Payee(db.Model):
 
     transactions = db.relationship('Transaction', back_populates='payee')
 
+    def to_dict(self):
+        return {c.name: getattr(self, c.name) for c in self.__table__.columns}
+
 
 class Transaction(db.Model):
     __tablename__ = 'transactions'
@@ -79,6 +82,17 @@ class Transaction(db.Model):
                 'name': self.payee.name
             } if self.payee else None,
         }
+
+    def delete(self):
+        try:
+            db.session.delete(self)
+            db.session.commit()
+            return True, None
+        except Exception as e:
+            db.session.rollback()
+            return False, str(e)
+
+
 
 
 class User(db.Model):
