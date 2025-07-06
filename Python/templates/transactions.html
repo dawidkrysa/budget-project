@@ -3,110 +3,144 @@
 {% block title %}Transactions{% endblock %}
 
 {% block content %}
+
+<!-- =========================
+    Stylesheets
+========================== -->
 <link href="{{ url_for('static', filename='css/transactions.css') }}" rel="stylesheet"/>
+
+<!-- =========================
+    Page Title
+========================== -->
 <h1 class="h4 mb-4">Transactions</h1>
+
+<!-- =========================
+    Search Bar & Add Transaction Button
+========================== -->
 <div class="d-flex gap-3 justify-content-between mb-3">
     <div id="searchBox" class="me-3 flex-grow-1">
         <input
-                type="text"
-                id="searchInput"
-                class="form-control"
-                placeholder="Search..."
+            type="text"
+            id="searchInput"
+            class="form-control"
+            placeholder="Search..."
         />
-
     </div>
     <div id="buttonBox">
-        <button id="addTransactionButton" type="button" class="btn btn-primary text-nowrap" data-bs-toggle="modal"
-                data-bs-target="#transactionModal">Add transaction
+        <button id="addTransactionButton"
+                type="button"
+                class="btn btn-primary text-nowrap addTransactionBtn"
+                data-bs-toggle="modal"
+                data-bs-target="#transactionModal">
+            Add transaction
         </button>
     </div>
 </div>
 
-<!-- Modal -->
-<!-- Prevent accidental modal close by clicking backdrop -->
-<!-- Prevent modal close with ESC key unless explicit close -->
-<div
-        class="modal fade"
-        id="transactionModal"
-        tabindex="-1"
-        aria-labelledby="transactionModalLabel"
-        aria-hidden="true"
-        data-bs-backdrop="static"
-        data-bs-keyboard="false"
->
+<!-- =========================
+    Add/Edit Transaction Modal
+========================== -->
+<!--
+    Prevent accidental modal close by:
+    - Clicking outside (backdrop)
+    - Pressing ESC
+    User must use buttons explicitly
+-->
+<div class="modal fade"
+     id="transactionModal"
+     tabindex="-1"
+     aria-labelledby="transactionModalLabel"
+     aria-hidden="true"
+     data-bs-backdrop="static"
+     data-bs-keyboard="false">
     <div class="modal-dialog modal-dialog-centered" role="document">
         <div class="modal-content">
             <header class="modal-header">
-                <h5 class="modal-title" id="exampleModalLongTitle">Add transaction</h5>
+                <h5 class="modal-title" id="transactionModalTitle">Add transaction</h5>
                 <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
             </header>
             <section class="modal-body">
                 <div id="transactionContent">Loading...</div>
             </section>
             <footer class="modal-footer">
-                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal" aria-label="Close modal">Cancel
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+                    Cancel
                 </button>
-                <button type="button" class="btn btn-primary" id="addTransactionBtn">Confirm</button>
+                <button type="button" class="btn btn-primary" id="addTransactionBtn">
+                    Confirm
+                </button>
             </footer>
         </div>
     </div>
 </div>
 
+<!-- =========================
+    Transactions Table
+========================== -->
 <div class="table-responsive">
     <table id="transactions" class="table table-striped table-hover table-bordered align-middle">
         <thead>
-        <tr>
-            {% for header in transaction_headings %}
-            <th scope="col" class="text-wrap text-left" style="width:auto;" data-index="{{ loop.index0 }}">{{ header }}
-                {% include "icons/chevron.html" %}
-            </th>
-            {% endfor %}
-            <th scope="col" class="text-left" style="width: 6rem;"></th>
-        </tr>
+            <tr>
+                {% for header in transaction_headings %}
+                <th scope="col"
+                    class="text-wrap text-left"
+                    style="width:auto;"
+                    data-index="{{ loop.index0 }}">
+                    {{ header }}
+                    {% include "icons/chevron.html" %}
+                </th>
+                {% endfor %}
+                <th scope="col" class="text-left" style="width: 6rem;"></th>
+            </tr>
         </thead>
         <tbody>
-        {% for row, id in transaction_data %}
-        <tr>
-            {% for cell in row %}
-            <td
-                    class="text-left {% if loop.index0 == 0 %}no-wrap{% else %}text-wrap{% endif %}"
-            >{{ cell }}
-            </td>
-            {% endfor %}
-            <td class="text-end pe-3" style="width: 6rem;">
-                <div class="d-flex align-items-center justify-content-end gap-2">
-                    <form action="{{ url_for('web.transaction_web', transaction_id=id) }}" method="POST"
-                          class="m-0">
-                        <input type="hidden" name="_method" value="PUT">
-                        <button type="submit" class="btn btn-sm btn-outline-primary p-2"
-                                data-bs-toggle="tooltip" title="Edit transaction"
+            {% for row, id in transaction_data %}
+            <tr>
+                {% for cell in row %}
+                <td class="text-left {% if loop.index0 == 0 %}no-wrap{% else %}text-wrap{% endif %}">
+                    {{ cell }}
+                </td>
+                {% endfor %}
+                <td class="text-end pe-3" style="width: 6rem;">
+                    <div class="d-flex align-items-center justify-content-end gap-2">
+                        <!-- Edit Button -->
+                        <button type="submit"
+                                class="btn btn-sm btn-outline-primary p-2 editTransactionBtn"
+                                data-id="{{ id }}"
+                                data-bs-toggle="tooltip"
+                                title="Edit transaction"
                                 style="transition: transform 0.2s;"
                                 onmouseover="this.style.transform='scale(1.2)'"
                                 onmouseout="this.style.transform='scale(1)'">
                             {% include "icons/edit.html" %}
                         </button>
-                    </form>
-                    <form action="{{ url_for('web.transaction_web', transaction_id=id) }}" method="POST"
-                          class="delete-form m-0">
-                        <input type="hidden" name="_method" value="DELETE">
-                        <button type="submit" class="btn btn-sm btn-outline-danger p-2"
-                                data-bs-toggle="tooltip" title="Delete transaction"
+                        <!-- Delete Button -->
+                        <button type="submit"
+                                class="btn btn-sm btn-outline-danger p-2 deleteTransactionBtn"
+                                data-id="{{ id }}"
+                                data-bs-toggle="tooltip"
+                                title="Delete transaction"
                                 style="transition: transform 0.2s;"
                                 onmouseover="this.style.transform='scale(1.2)'"
                                 onmouseout="this.style.transform='scale(1)'">
                             {% include "icons/trash.html" %}
                         </button>
-                    </form>
-                </div>
-            </td>
-        </tr>
-        {% endfor %}
+                    </div>
+                </td>
+            </tr>
+            {% endfor %}
         </tbody>
     </table>
 </div>
 
-<!-- Confirmation Modal -->
-<div class="modal fade" id="confirmDeleteModal" tabindex="-1" aria-labelledby="confirmDeleteLabel" aria-hidden="true">
+<!-- =========================
+    Confirmation Delete Modal
+========================== -->
+<div class="modal fade"
+     id="confirmDeleteModal"
+     tabindex="-1"
+     aria-labelledby="confirmDeleteLabel"
+     aria-hidden="true">
     <div class="modal-dialog modal-dialog-centered">
         <div class="modal-content">
             <div class="modal-header">
@@ -117,12 +151,20 @@
                 Are you sure you want to delete this transaction?
             </div>
             <div class="modal-footer">
-                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
-                <button type="button" id="confirmDeleteBtn" class="btn btn-danger">Delete</button>
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+                    Cancel
+                </button>
+                <button type="button" id="confirmDeleteBtn" class="btn btn-danger">
+                    Delete
+                </button>
             </div>
         </div>
     </div>
 </div>
 
+<!-- =========================
+    Scripts
+========================== -->
 <script src="../static/js/transactions.js"></script>
+
 {% endblock %}

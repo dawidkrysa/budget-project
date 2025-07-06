@@ -1,9 +1,49 @@
+let transactionMode = 'add'; // 'add' or 'edit'
+let transactionIdToEdit = null; // for editing
+
+document.querySelectorAll('.editTransactionBtn').forEach(btn => {
+    btn.addEventListener('click', () => {
+        const transactionId = btn.dataset.id;
+        openTransactionModal('edit', transactionId);
+    });
+});
+
+document.querySelectorAll('.addTransactionBtn').forEach(btn => {
+    btn.addEventListener('click', () => {
+        const transactionId = btn.dataset.id;
+        openTransactionModal('add', transactionId);
+    });
+});
+
+function openTransactionModal(mode, transactionId = null) {
+    transactionMode = mode;
+    transactionIdToEdit = transactionId;
+
+    const modalElement = document.getElementById('transactionModal');
+    const modal = bootstrap.Modal.getOrCreateInstance(modalElement);
+
+    // Set modal title
+    const title = document.getElementById('transactionModalTitle');
+    title.textContent = mode === 'edit' ? 'Edit transaction' : 'Add transaction';
+
+    // Show modal
+    modal.show();
+
+    // trigger the event manually so your existing 'shown.bs.modal' fetches data
+    modalElement.dispatchEvent(new Event('shown.bs.modal'));
+}
+
 const transactionModal = document.getElementById('transactionModal');
 transactionModal.addEventListener('shown.bs.modal', function () {
     const contentDiv = document.getElementById('transactionContent');
     contentDiv.innerHTML = 'Loading...';
 
-    fetch('/api/v1/transactions/form-data')
+    let fetchUrl = '/api/v1/transactions/form-data';
+    if (transactionMode === 'edit') {
+        fetchUrl = `/api/v1/transactions/${transactionIdToEdit}/form-data`;
+    }
+
+    fetch(fetchUrl)
         .then(res => res.json())
         .then(data => {
             // Build the form HTML dynamically:
@@ -11,41 +51,45 @@ transactionModal.addEventListener('shown.bs.modal', function () {
                   <form id="transactionForm">
                     <div class="mb-3">
                       <label for="transactionDate" class="form-label">Date</label>
-                      <input type="date" class="form-control" id="transactionDate" name="date" value="${data.current_date || ''}" required>
+                      <input type="date" class="form-control" id="transactionDate" name="date" value="${data.date || ''}" required>
                     </div>
 
                     <div class="mb-3">
                       <label for="transactionAccount" class="form-label">Account</label>
-                      <select class="form-select" id="transactionAccount" name="account_id" required>
-                        <option value="" disabled selected>Select account</option>
-                        ${data.accounts.map(acc => `<option value="${acc.id}">${acc.name}</option>`).join('')}
-                      </select>
+                        <select class="form-select" id="transactionAccount" name="account_id" required>
+                          <option value="" disabled ${!data.account_id ? 'selected' : ''}>Select account</option>
+                          ${data.accounts.map(acc =>
+                `<option value="${acc.id}" ${acc.id === data.account_id ? 'selected' : ''}>${acc.name}</option>`
+            ).join('')}
+                        </select>
                     </div>
 
                     <div class="mb-3">
                       <label for="transactionPayee" class="form-label">Payee</label>
-                      <input type="text" class="form-control" id="transactionPayee" name="payee_name" list="payeeList" autocomplete="off" placeholder="Type or select payee" required>
-                      <datalist id="payeeList">
-                        ${data.payees.map(payee => `<option value="${payee.name}">`).join('')}
-                      </datalist>
+                      <input type="text" class="form-control" id="transactionPayee" name="payee_name" list="payeeList" autocomplete="off" placeholder="Type or select payee" value="${data.payee_name || ''}" required>
+                        <datalist id="payeeList">
+                            ${data.payees.map(payee => `<option value="${payee.name}">`).join('')}
+                        </datalist>
                     </div>
 
                     <div class="mb-3">
                       <label for="transactionCategory" class="form-label">Category</label>
-                      <select class="form-select" id="transactionCategory" name="category_id">
-                        <option value="" selected>-- None --</option>
-                        ${data.categories.map(cat => `<option value="${cat.id}">${cat.name}</option>`).join('')}
-                      </select>
+                        <select class="form-select" id="transactionCategory" name="category_id">
+                            <option value="">-- None --</option>
+                            ${data.categories.map(cat =>
+                `<option value="${cat.id}" ${cat.id === data.category_id ? 'selected' : ''}>${cat.name}</option>`
+            ).join('')}
+                        </select>
                     </div>
 
                     <div class="mb-3">
                       <label for="transactionNote" class="form-label">Note</label>
-                      <textarea class="form-control" id="transactionNote" name="memo" rows="2" placeholder="Optional note"></textarea>
+                      <textarea class="form-control" id="transactionNote" name="memo" rows="2" placeholder="Optional note">${data.memo || ''}</textarea>
                     </div>
 
                     <div class="mb-3">
                       <label for="transactionAmount" class="form-label">Amount</label>
-                      <input type="number" step="0.01" min="0" class="form-control" id="transactionAmount" name="amount" placeholder="0.00" required>
+                      <input type="number" step="0.01" min="0" class="form-control" id="transactionAmount" name="amount" placeholder="0.00" value="${data.amount || ''}" required>
                     </div>
                   </form>
                 `;
@@ -59,43 +103,54 @@ transactionModal.addEventListener('shown.bs.modal', function () {
 
 const saveBtn = document.getElementById('addTransactionBtn');
 saveBtn.addEventListener('click', () => {
-  const form = document.getElementById('transactionForm');
-  if (!form.checkValidity()) {
-    form.reportValidity();
-    return; // Stop if invalid
-  }
-  // Gather form data (example using FormData)
-  const formData = new FormData(form);
+    const form = document.getElementById('transactionForm');
+    if (!form.checkValidity()) {
+        form.reportValidity();
+        return; // Stop if invalid
+    }
+    // Gather form data (example using FormData)
+    const formData = new FormData(form);
 
-  // Optionally convert FormData to JSON if your API expects JSON:
-  const jsonData = {};
-  formData.forEach((value, key) => {
-    jsonData[key] = value;
-  });
+    // Optionally convert FormData to JSON if your API expects JSON:
+    const jsonData = {};
+    formData.forEach((value, key) => {
+        jsonData[key] = value;
+    });
 
-  // Call your API (adjust URL and options as needed)
-  fetch('/api/v1/transactions', {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify(jsonData),
-  })
-  .then(response => {
-    if (!response.ok) throw new Error('Network response was not ok');
-    return response.json();
-  })
-  .then(data => {
-    console.log('Transaction saved:', data);
+    // Decide endpoint & method
+    let endpoint, method;
+    if (transactionMode === 'add') {
+        endpoint = '/api/v1/transactions';
+        method = 'POST';
+    } else if (transactionMode === 'edit') {
+        endpoint = `/api/v1/transactions/${transactionIdToEdit}`;
+        method = 'PUT';
+    }
+    // Call your API - Add transaction
+    fetch(endpoint, {
+        method: method,
+        headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify(jsonData),
+    })
+        .then(response => {
+            if (!response.ok) throw new Error('Network response was not ok');
+            return response.json();
+        })
+        .then(data => {
+            console.log('Transaction saved:', data);
 
-    // Close the modal
-    const modalElement = document.getElementById('transactionModal');
-    const modalInstance = bootstrap.Modal.getInstance(modalElement);
-    if (modalInstance) modalInstance.hide(); window.location.reload();
+            // Close the modal
+            const modalElement = document.getElementById('transactionModal');
+            const modalInstance = bootstrap.Modal.getInstance(modalElement);
+            if (modalInstance) modalInstance.hide();
+            window.location.reload();
 
-  })
-  .catch(error => {
-    console.error('Error submitting transaction:', error);
-    // Show an error message to user if you want
-  });
+        })
+        .catch(error => {
+            console.error('Error submitting transaction:', error);
+            // Show an error message to user if you want
+        });
+
 });
 
 document.addEventListener('DOMContentLoaded', () => {
@@ -164,21 +219,36 @@ document.addEventListener('DOMContentLoaded', () => {
 
     let formToSubmit = null;
 
-      // Bootstrap modal instance
-      const deleteModal = new bootstrap.Modal(document.getElementById('confirmDeleteModal'));
+    // Bootstrap modal instance
+    const deleteModal = new bootstrap.Modal(document.getElementById('confirmDeleteModal'));
+    let transactionIdToDelete = null;
 
-      document.querySelectorAll('.delete-form').forEach(form => {
-        form.addEventListener('submit', e => {
-          e.preventDefault(); // stop form submission
-          formToSubmit = form; // save current form
-          deleteModal.show();
+    document.querySelectorAll('.deleteTransactionBtn').forEach(btn => {
+        btn.addEventListener('click', () => {
+            transactionIdToDelete = btn.getAttribute('data-id');
+            deleteModal.show();
         });
-      });
+    });
 
-      document.getElementById('confirmDeleteBtn').addEventListener('click', () => {
-        if (formToSubmit) {
-          formToSubmit.submit();  // submit form after confirmation
-        }
-      });
+
+    document.getElementById('confirmDeleteBtn').addEventListener('click', () => {
+        if (!transactionIdToDelete) return;
+
+        fetch(`/api/v1/transactions/${transactionIdToDelete}`, {
+            method: 'DELETE',
+            headers: { 'Content-Type': 'application/json' }
+        })
+        .then(response => {
+            if (!response.ok) throw new Error('Failed to delete');
+            return response.json();
+        })
+        .then(data => {
+            console.log('Deleted:', data);
+            window.location.reload();
+        })
+        .catch(error => {
+            console.error('Error deleting transaction:', error);
+        });
+    });
 });
 
