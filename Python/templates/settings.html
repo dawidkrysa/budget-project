@@ -1,10 +1,21 @@
 <!DOCTYPE html>
-<!-- Use layout.html as the base template for this page. -->
-{% extends "layout.html" %}
-<!--This is overriding the title block defined in layout.html-->
-{% block title %}Settings{% endblock %}
 
-<!--This defines the content that should go inside the main page body. -->
+<!-- =========================
+    Extending Base Layout
+========================== -->
+{% extends "layout.html" %}
+
+<!-- =========================
+    Page Title Block
+========================== -->
+{% block title %}
+    Settings
+{% endblock %}
+
+<!-- =========================
+    Main Content Block
+========================== -->
 {% block content %}
-<h1 class="text-2xl font-semibold mb-4">Settings</h1>
+    <!-- Page Heading -->
+    <h1 class="text-2xl font-semibold mb-4">Settings</h1>
 {% endblock %}
