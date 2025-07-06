@@ -1,0 +1,30 @@
+.accordion-button {
+    box-shadow: none !important;
+}
+
+/* Ensure even when expanded, it stays white */
+.accordion-button:not(.collapsed) {
+    background-color: white !important;
+    color: inherit !important;
+    box-shadow: none !important;
+}
+
+.accordion-flush .accordion-item {
+  border-bottom: 2px solid #dee2e6; /* default color, but thicker */
+}
+
+@media (max-width: 576px) {
+    .header-labels, .amounts {
+        flex-direction: column;
+        gap: 0.25rem !important;
+        align-items: stretch;
+    }
+    .header-labels span, .amounts input {
+        width: 8rem; /* consistent width for all inputs */
+        flex: 0 0 8rem;
+    }
+    #accordionFlushMain {
+      margin-bottom: 2rem;
+    }
+
+}

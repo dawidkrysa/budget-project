@@ -1,13 +1,23 @@
 #!/usr/bin/env python3
 from flask import Blueprint, render_template
 from sys import path
-from models.models import Transaction
+from models.models import Transaction, Category, db
 from sqlalchemy import desc
 web = Blueprint('web', __name__)
 
 @web.route('/')
 def home():
-    return render_template('home.html', active_page='home')
+    categories_data = Category.query.filter(Category.main_category_id != None).all()
+
+    result = {}
+
+    for c in categories_data:
+        main_cat_name = c.main_category.name
+        if main_cat_name not in result:
+            result[main_cat_name] = []
+        result[main_cat_name].append(c.name)
+
+    return render_template('home.html', active_page='home', main_categories = result)
 
 @web.route('/transactions')
 def transactions():
