@@ -161,4 +161,24 @@ document.addEventListener('DOMContentLoaded', () => {
             row.style.display = match ? '' : 'none';
         });
     });
+
+    let formToSubmit = null;
+
+      // Bootstrap modal instance
+      const deleteModal = new bootstrap.Modal(document.getElementById('confirmDeleteModal'));
+
+      document.querySelectorAll('.delete-form').forEach(form => {
+        form.addEventListener('submit', e => {
+          e.preventDefault(); // stop form submission
+          formToSubmit = form; // save current form
+          deleteModal.show();
+        });
+      });
+
+      document.getElementById('confirmDeleteBtn').addEventListener('click', () => {
+        if (formToSubmit) {
+          formToSubmit.submit();  // submit form after confirmation
+        }
+      });
 });
+
