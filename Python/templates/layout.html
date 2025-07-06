@@ -15,32 +15,25 @@
 <!-- Sidebar -->
 <aside class="sidebar">
     <div class="top-icons">
-        <a
-                href="{{ url_for('web.home') }}"
+        <a href="{{ url_for('web.home') }}"
                 class="p-2 rounded {% if active_page == 'home' %}bg-primary-subtle{% else %}text-muted{% endif %} text-decoration-none"
-        >{% include "icons/home.html" %}</a
-        >
+        >{% include "icons/home.html" %}</a>
 
-        <a
-                href="{{ url_for('web.transactions') }}"
+        <a href="{{ url_for('web.transactions') }}"
                 class="p-2 rounded {% if active_page == 'transactions' %}bg-primary-subtle{% else %}text-muted{% endif %} text-decoration-none"
-        >{% include "icons/list.html" %}</a
-        >
+        >{% include "icons/list.html" %}</a>
 
-        <a
-                href="{{ url_for('web.reports') }}"
+        <a href="{{ url_for('web.reports') }}"
                 class="p-2 rounded {% if active_page == 'reports' %}bg-primary-subtle{% else %}text-muted{% endif %} text-decoration-none"
-        >{% include "icons/chart-bar.html" %}</a
-        >
+        >{% include "icons/chart-bar.html" %}</a>
+
     </div>
 
     <div class="bottom-icons">
         <div class="separator"></div>
-        <a
-                href="{{ url_for('web.settings') }}"
+        <a href="{{ url_for('web.settings') }}"
                 class="p-2 rounded {% if active_page == 'settings' %}bg-primary-subtle{% else %}text-muted{% endif %} text-decoration-none"
-        >{% include "icons/cog.html" %}</a
-        >
+        >{% include "icons/cog.html" %}</a>
     </div>
 </aside>
 
