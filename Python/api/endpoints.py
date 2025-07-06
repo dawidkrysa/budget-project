@@ -22,15 +22,21 @@ def delete_transaction_api(transaction_id):
     else:
         return jsonify({"status": "error", "message": "Transaction not found."}), 404
 
-@web.route("/transactions/<int:transaction_id>", methods=['DELETE'])
-def delete_transaction_web(transaction_id):
+# Not compatible with REST because of Jinja2 restrictions. Replaced PUT to POST with hidden override
+@web.route("/transactions/<int:transaction_id>", methods=['POST'])
+def transaction_web(transaction_id):
+    method = request.form.get('_method', '').upper()
     transaction = Transaction.query.get(transaction_id)
     if transaction:
-        success, error = transaction.delete()
-        if success:
-            flash("Transaction deleted.", "success")
+        if method == 'DELETE':
+            success, error = transaction.delete()
+            if success:
+                flash("Transaction deleted.", "success")
+            else:
+                flash(f"Error deleting transaction: {error}", "error")
         else:
-            flash(f"Error deleting transaction: {error}", "error")
+            pass
+            # TODO
     else:
         flash("Transaction not found.", "error")
     return redirect(url_for("web.transactions"))
