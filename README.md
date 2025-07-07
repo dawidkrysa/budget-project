@@ -241,9 +241,11 @@ Feel free to reach out via GitHub or LinkedIn.
 [Python-url]: https://www.python.org/
 [Docker]: https://img.shields.io/badge/docker-257bd6?style=for-the-badge&logo=docker&logoColor=white
 [Docker-url]: https://www.docker.com/
-[HTML]: https://img.shields.io/badge/HTML-%23E34F26.svg?logo=html5&logoColor=white
-[HTMP-url]: https://www.w3.org/TR/html52/
-[CSS]: https://img.shields.io/badge/CSS-639?logo=css&logoColor=fff
+[HTML]: https://img.shields.io/badge/html-E34F26?style=for-the-badge&logo=html5&logoColor=white
+[HTML-url]: https://www.w3.org/TR/html52/
+[CSS]: https://img.shields.io/badge/css-1572B6?style=for-the-badge&logo=css3&logoColor=white
 [CSS-url]: https://www.w3.org/Style/CSS/
-[JavaScript]: https://img.shields.io/badge/JavaScript-F7DF1E?logo=javascript&logoColor=000
+[JavaScript]: https://img.shields.io/badge/javascript-F7DF1E?style=for-the-badge&logo=javascript&logoColor=black
+
+
 [JavaScript-url]: https://tc39.es/ecma262/
