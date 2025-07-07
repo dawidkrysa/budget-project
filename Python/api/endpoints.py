@@ -44,7 +44,7 @@ def get_form_data():
     """
     Retrieve form data for transactions: categories, payees, accounts.
     """
-    categories = [{'id': c.id, 'name': c.name} for c in Category.query.all()]
+    categories = [{'id': c.id, 'name': c.name} for c in Category.query.filter(Category.main_category_id != None).all()]
     payees = [{'id': p.id, 'name': p.name} for p in Payee.query.all()]
     accounts = [{'id': a.id, 'name': a.name} for a in Account.query.all()]
     return categories, payees, accounts
