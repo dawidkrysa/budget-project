@@ -56,6 +56,9 @@ A self-hosted personal budget tracking application inspired by **YNAB**, built w
 
 [![Python][Python]][Python-url]
 [![Docker][Docker]][Docker-url]
+[![HTML][HTML]][HTML-url]
+[![CSS][CSS]][CSS-url]
+[![JavaScript][JavaScript]][JavaScript-url]
 
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
 
@@ -238,3 +241,9 @@ Feel free to reach out via GitHub or LinkedIn.
 [Python-url]: https://www.python.org/
 [Docker]: https://img.shields.io/badge/docker-257bd6?style=for-the-badge&logo=docker&logoColor=white
 [Docker-url]: https://www.docker.com/
+[HTML]: https://img.shields.io/badge/HTML-%23E34F26.svg?logo=html5&logoColor=white
+[HTMP-url]: https://www.w3.org/TR/html52/
+[CSS]: https://img.shields.io/badge/CSS-639?logo=css&logoColor=fff
+[CSS-url]: https://www.w3.org/Style/CSS/
+[JavaScript]: https://img.shields.io/badge/JavaScript-F7DF1E?logo=javascript&logoColor=000
+[JavaScript-url]: https://tc39.es/ecma262/
