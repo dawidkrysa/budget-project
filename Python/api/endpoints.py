@@ -14,12 +14,21 @@ api = Blueprint('api', __name__, url_prefix='/api/v1')
 @api.route('/status', methods=['GET'])
 def status():
     """
-    Simple endpoint to check API status.
+    Endpoint to check API and database status.
     Returns:
-        JSON with status "OK"
+        JSON with status "OK" if API and DB are healthy, otherwise "ERROR"
     """
-    return jsonify({"status": "OK"})
+    db_status = "OK"
+    try:
+        # A very lightweight query to check database connectivity
+        db.session.execute('SELECT 1')
+    except Exception as e:
+        db_status = f"ERROR: {str(e)}"
 
+    return jsonify({
+        "status": "OK",
+        "database": db_status
+    })
 
 
 # -------------------------------
