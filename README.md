@@ -237,7 +237,7 @@ Feel free to reach out via GitHub or LinkedIn.
 <!-- https://www.markdownguide.org/basic-syntax/#reference-style-links -->
 [issues-shield]: https://img.shields.io/github/issues/dawidkrysa/budget-project.svg?style=for-the-badge
 [issues-url]: https://github.com/dawidkrysa/budget-project/issues
-[license-shield]: https://img.shields.io/github/license/dawidkrysa/budget-project.svg?style=for-the-badge
+[license-shield]: https://img.shields.io/github/license/dawidkrysa/budget-project?label=license&style=for-the-badge
 [license-url]: https://github.com/dawidkrysa/budget-project/blob/master/LICENSE.txt
 [linkedin-shield]: https://img.shields.io/badge/-LinkedIn-black.svg?style=for-the-badge&logo=linkedin&colorB=555
 [linkedin-url]: https://linkedin.com/in/dawid-krysa
