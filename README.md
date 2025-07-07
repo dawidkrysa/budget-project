@@ -66,17 +66,22 @@ A self-hosted personal budget tracking application inspired by **YNAB**, built w
 
 ```
 budget-project/
-├── Python/
-│   ├── app.py                # Flask app entry point
-│   ├── requirements.txt      # Python dependencies
-│   └── templates/            # Jinja2 HTML templates
-│       └── icons/            # SVG Icons
+├── Python/                     # Main Python application source
+│   ├── api/                    # API routes (Flask Blueprints)
+│   ├── extensions/             # Extensions (DB, login manager, etc.)
+│   ├── models/                 # SQLAlchemy models
+│   ├── static/                 # Static assets (CSS, JS)
+│   │   ├── css/                # Stylesheets
+│   │   └── js/                 # JavaScript files
+│   ├── templates/              # Jinja2 HTML templates
+│   │   └── icons/              # SVG or icon partials
+│   └── web/                    # Web page routes / views
 ├── Postgres/
-│   ├── init.sql              # DB schema
-│   ├── DB.erd.json           # DB ERD Diagram
-│   └── init_data.sql         # Sample seed data
-├── docker-compose.yml        # Docker orchestration
-└── README.md                 # Project documentation
+│   ├── init.sql                # DB schema
+│   ├── DB.erd.json             # DB ERD Diagram
+│   └── init_data.sql           # Sample seed data
+├── docker-compose.yml          # Docker orchestration
+└── README.md                   # Project documentation
 ```
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
 
