@@ -226,6 +226,7 @@ Feel free to reach out via GitHub or LinkedIn.
 
 * Inspired by [YNAB](https://www.youneedabudget.com/)
 * Flask and Docker documentation
+* Use Raspberry Pi as the Server
 
 
 

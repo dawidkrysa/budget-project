@@ -10,3 +10,4 @@ cryptography           # For secure data encryption and decryption
 # Additional libraries
 numpy                  # For numerical computing and handling large datasets
 python-dotenv          # For loading environment variables from a .env file
+pytest                 # Python API and web testing
