@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 from flask import Blueprint, jsonify, request
-from models.models import db, Transaction, Payee, Category, Account
+from models.models import db, Transaction, Payee, Category, Account, Budget
 from sqlalchemy import func
 from datetime import date
 
@@ -53,7 +53,7 @@ def get_form_data():
     """
     Retrieve form data for transactions: categories, payees, accounts.
     """
-    categories = [{'id': c.id, 'name': c.name} for c in Category.query.filter(Category.main_category_id != None).all()]
+    categories = [{'id': c.id, 'name': c.name} for c in Category.query.filter(Category.main_category_id.isnot(None)).all()]
     payees = [{'id': p.id, 'name': p.name} for p in Payee.query.all()]
     accounts = [{'id': a.id, 'name': a.name} for a in Account.query.all()]
     return categories, payees, accounts
@@ -221,7 +221,7 @@ def transaction_add_form_data(transaction_id):
 # -------------------------------
 
 @api.route('/payees', methods=['GET', 'POST'])
-def payees():
+def manage_payees():
     """
     GET: List all payees.
     POST: Add a new payee.
@@ -261,7 +261,7 @@ def payees():
 
 
 @api.route('/payees/<int:payee_id>', methods=['GET', 'PUT', 'PATCH', 'DELETE'])
-def payee(payee_id):
+def manage_payee(payee_id):
     """
     Manage a specific payee by ID.
     GET: Retrieve payee info.
@@ -305,3 +305,33 @@ def payee(payee_id):
             return jsonify({"status": "error", "message": str(e)}), 500
 
     return None
+
+# -------------------------------
+# Budget Endpoints
+# -------------------------------
+
+@api.route('/budgets', methods=['GET'])
+def get_budgets():
+    """
+    Get all budgets.
+    GET: Retrieve budget list.
+    """
+    # Get category if it's provided
+    category = request.args.get("category_name")
+    year = request.args.get("year")
+    month = request.args.get("month")
+
+    query = Budget.query.join(Budget.category)
+
+    if category:
+        query = query.filter(Category.name.ilike(category)) \
+            .filter(Category.main_category_id.isnot(None))
+
+    if year is not None:
+        query = query.filter(Budget.year == year)
+
+    if month is not None:
+        query = query.filter(Budget.month == month)
+
+    budgets = query.all()
+    return jsonify([b.to_dict() for b in budgets]), 200

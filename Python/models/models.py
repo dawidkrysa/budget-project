@@ -78,6 +78,17 @@ class Budget(db.Model):
 
     category = db.relationship('Category', back_populates='budgets')
 
+    def to_dict(self):
+        """
+        Converts the Budget object to a dictionary.
+        Returns:
+            dict: Dictionary with column names as keys and attribute values.
+        """
+        data = {}
+        data = {c.name: getattr(self, c.name) for c in self.__table__.columns}
+        data['category_name'] = self.category.name if self.category else None
+        return data
+
 
 # -------------------------------
 # Payee Model
