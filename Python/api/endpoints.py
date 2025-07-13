@@ -2,6 +2,7 @@
 from flask import Blueprint, jsonify, request
 from models.models import db, Transaction, Payee, Category, Account, Budget
 from sqlalchemy import func
+from sqlalchemy.exc import IntegrityError, DataError, OperationalError, ProgrammingError, StatementError, InvalidRequestError, DBAPIError
 from datetime import date
 
 api = Blueprint('api', __name__, url_prefix='/api/v1')
@@ -62,14 +63,67 @@ def get_form_data():
 def commit_session():
     """
     Commit the current DB session, rollback if error occurs.
-    Return (success: bool, error_message: Optional[str])
+    Return (success: bool, error_message: Optional[str], status code: integer)
     """
     try:
         db.session.commit()
-        return True, None
+        return True, None, 200
+    except IntegrityError as e:
+        db.session.rollback()
+        return False, jsonify({
+            "status": "error",
+            "message": "A database constraint was violated. Likely a duplicate or foreign key issue.",
+        }), 400
+    except DataError as e:
+        db.session.rollback()
+        return False, jsonify({
+            "status": "error",
+            "type": "DataError",
+            "message": "Invalid data format or out-of-range value.",
+            # "details": str(e.orig)
+        }), 400
+    except OperationalError as e:
+        db.session.rollback()
+        return False, jsonify({
+            "status": "error",
+            "type": "OperationalError",
+            "message": "Database operational error. This could be a lost connection or misconfiguration.",
+        }), 500
+    except ProgrammingError as e:
+        db.session.rollback()
+        return False, jsonify({
+            "status": "error",
+            "type": "ProgrammingError",
+            "message": "There was a database programming error, such as a malformed SQL statement.",
+        }), 500
+    except DBAPIError as e:
+        db.session.rollback()
+        return False, jsonify({
+            "status": "error",
+            "type": "DBAPIError",
+            "message": "Low-level database driver error.",
+        }), 500
+    except StatementError as e:
+        db.session.rollback()
+        return False, jsonify({
+            "status": "error",
+            "type": "StatementError",
+            "message": "There was an error preparing or executing the database statement.",
+        }), 400
+    except InvalidRequestError as e:
+        db.session.rollback()
+        return False, jsonify({
+            "status": "error",
+            "type": "InvalidRequestError",
+            "message": "Invalid request to the database session or improper use of the ORM.",
+        }), 400
     except Exception as e:
         db.session.rollback()
-        return False, str(e)
+        return False, jsonify({
+            "status": "error",
+            "type": "UnknownError",
+            "message": "An unexpected error occurred while saving to the database.",
+        }), 500
 
 # -------------------------------
 # Transaction Endpoints
@@ -99,26 +153,21 @@ def update_transaction(transaction_id):
         if not payee_name:
             return jsonify({"status": "error", "message": "Payee name is required."}), 400
 
-        try:
-            payee, _ = get_payee(payee_name)
+        payee, _ = get_payee(payee_name)
 
-            # Update transaction fields
-            transaction.date = data.get('date', transaction.date)
-            transaction.account_id = data.get('account_id', transaction.account_id)
-            transaction.category_id = data.get('category_id', transaction.category_id)
-            transaction.payee_id = payee.id
-            transaction.memo = data.get('memo', transaction.memo)
-            transaction.amount = data.get('amount', transaction.amount)
+        # Update transaction fields
+        transaction.date = data.get('date', transaction.date)
+        transaction.account_id = data.get('account_id', transaction.account_id)
+        transaction.category_id = data.get('category_id', transaction.category_id)
+        transaction.payee_id = payee.id
+        transaction.memo = data.get('memo', transaction.memo)
+        transaction.amount = data.get('amount', transaction.amount)
 
-            success, error = commit_session()
-            if success:
-                return jsonify({"status": "success", "message": "Transaction updated."}), 200
-            else:
-                return jsonify({"status": "error", "message": error}), 500
-
-        except Exception as e:
-            db.session.rollback()
-            return jsonify({"status": "error", "message": str(e)}), 500
+        success, error_response, status_code = commit_session()
+        if success:
+            return jsonify({"status": "success", "message": "Transaction updated."}), 200
+        else:
+            return error_response, status_code
 
     else:
         return jsonify({"status": "error", "message": "Invalid request."}), 400
@@ -149,28 +198,24 @@ def add_transaction():
     if not payee_name:
         return jsonify({"status": "error", "message": "Payee name is required."}), 400
 
-    try:
-        payee, _ = get_payee(payee_name)
+    payee, _ = get_payee(payee_name)
 
-        transaction = Transaction(
-            date=data['date'],
-            account_id=data['account_id'],
-            payee_id=payee.id,
-            category_id=data['category_id'],
-            amount=data['amount'],
-            memo=data.get('memo'),
-        )
+    transaction = Transaction(
+        date=data['date'],
+        account_id=data['account_id'],
+        payee_id=payee.id,
+        category_id=data['category_id'],
+        amount=data['amount'],
+        memo=data.get('memo'),
+    )
 
-        db.session.add(transaction)
-        success, error = commit_session()
-        if success:
-            return jsonify(transaction.to_dict()), 200
-        else:
-            return jsonify({"status": "error", "message": error}), 500
+    db.session.add(transaction)
+    success, error_response, status_code = commit_session()
+    if success:
+        return jsonify(transaction.to_dict()), 200
+    else:
+        return error_response, status_code
 
-    except Exception as e:
-        db.session.rollback()
-        return jsonify({"status": "error", "message": str(e)}), 500
 
 
 @api.route('/transactions/form-data')
@@ -237,27 +282,24 @@ def manage_payees():
             payee_name = request.form.get('name')
         if not payee_name:
             return jsonify({"status": "error", "message": "Payee name is required."}), 400
-        try:
-            existing_payee = db.session.query(Payee).filter(
-                func.lower(Payee.name) == payee_name.lower()
-            ).first()
 
-            if existing_payee:
-                return jsonify({"status": "error", "message": "Payee name already exists."}), 403
+        existing_payee = db.session.query(Payee).filter(
+            func.lower(Payee.name) == payee_name.lower()
+        ).first()
+
+        if existing_payee:
+            return jsonify({"status": "error", "message": "Payee name already exists."}), 403
+        else:
+            new_payee = Payee(name=payee_name)
+            db.session.add(new_payee)
+            success, error_response, status_code = commit_session()
+            if success:
+                return jsonify(new_payee.to_dict()), 200
             else:
-                new_payee = Payee(name=payee_name)
-                db.session.add(new_payee)
-                success, error = commit_session()
-                if success:
-                    return jsonify(new_payee.to_dict()), 200
-                else:
-                    return jsonify({"status": "error", "message": error}), 500
+                return error_response, status_code
 
-        except Exception as e:
-            db.session.rollback()
-            return jsonify({"status": "error", "message": str(e)}), 500
 
-    return None
+    return jsonify({"status": "error", "message": "Method not allowed."}), 405
 
 
 @api.route('/payees/<int:payee_id>', methods=['GET', 'PUT', 'PATCH', 'DELETE'])
@@ -286,52 +328,105 @@ def manage_payee(payee_id):
             # PUT requires full replacement; 'name' missing means error
             return jsonify({"status": "error", "message": "'name' is required for PUT."}), 400
 
-        success, error = commit_session()
+        success, error_response, status_code = commit_session()
         if success:
             return jsonify(payee.to_dict()), 200
         else:
-            return jsonify({"status": "error", "message": error}), 500
+            return error_response, status_code
 
     elif request.method == 'DELETE':
-        try:
-            db.session.delete(payee)
-            success, error = commit_session()
-            if success:
-                return jsonify({"status": "success", "message": "Payee deleted."}), 200
-            else:
-                return jsonify({"status": "error", "message": error}), 500
-        except Exception as e:
-            db.session.rollback()
-            return jsonify({"status": "error", "message": str(e)}), 500
 
-    return None
+        db.session.delete(payee)
+        success, error_response, status_code = commit_session()
+        if success:
+            return jsonify({"status": "success", "message": "Payee deleted."}), 200
+        else:
+            return error_response, status_code
+
+    return jsonify({"status": "error", "message": "Method not allowed."}), 405
 
 # -------------------------------
 # Budget Endpoints
 # -------------------------------
 
-@api.route('/budgets', methods=['GET'])
+@api.route('/budgets', methods=['GET','POST'])
 def get_budgets():
     """
     Get all budgets.
     GET: Retrieve budget list.
     """
-    # Get category if it's provided
-    category = request.args.get("category_name")
-    year = request.args.get("year")
-    month = request.args.get("month")
+    if request.method == 'GET':
+        # Get category if it's provided
+        category = request.args.get("category_name")
+        year = request.args.get("year")
+        month = request.args.get("month")
 
-    query = Budget.query.join(Budget.category)
+        query = Budget.query.join(Budget.category)
 
-    if category:
-        query = query.filter(Category.name.ilike(category)) \
-            .filter(Category.main_category_id.isnot(None))
+        if category:
+            query =  query.filter(Category.name.ilike(f"%{category}%")) \
+                .filter(Category.main_category_id.isnot(None))
 
-    if year is not None:
-        query = query.filter(Budget.year == year)
+        try:
+            year = int(year) if year else None
+            month = int(month) if month else None
+        except ValueError:
+            return jsonify({"status": "error", "message": "Year and month must be integers."}), 400
 
-    if month is not None:
-        query = query.filter(Budget.month == month)
+        if year is not None:
+            query = query.filter(Budget.year == year)
 
-    budgets = query.all()
-    return jsonify([b.to_dict() for b in budgets]), 200
+        if month is not None:
+            query = query.filter(Budget.month == month)
+
+        budgets = query.all()
+        return jsonify([b.to_dict() for b in budgets]), 200
+
+    elif request.method == 'POST':
+        if request.is_json:
+            new_budget = Budget()
+            new_budget.assigned = request.get_json().get('assigned')
+            new_budget.year = request.get_json().get('year')
+            new_budget.month = request.get_json().get('month')
+            new_budget.category_id = request.get_json().get('category_id')
+
+            db.session.add(new_budget)
+            success, error_response, status_code = commit_session()
+            if success:
+                return jsonify(new_budget.to_dict()), 200
+            else:
+                return error_response, status_code
+
+    return jsonify({"status": "error", "message": "Method not allowed."}), 405
+
+@api.route('/budgets/<int:budget_id>', methods=['PATCH'])
+def update_budget(budget_id):
+    """
+    PATCH /budgets/<budget_id>
+    Partially update the budget's assigned amount.
+    JSON body must include: { "assigned": <number> }
+    """
+    budget = Budget.query.get(budget_id)
+    data = request.get_json()
+    if not data:
+        return jsonify({"status": "error", "message": "Invalid JSON body."}), 400
+
+    if not budget:
+        return jsonify({"status": "error", "message": "Budget not found."}), 404
+
+    if 'assigned' not in data:
+        return jsonify({"status": "error", "message": "'assigned' is required for PATCH."}), 400
+
+    # Optional: validate assigned is a number
+    try:
+        assigned_value = float(data['assigned'])
+    except (ValueError, TypeError):
+        return jsonify({"status": "error", "message": "'assigned' must be a number."}), 400
+
+    budget.assigned = assigned_value
+
+    success, error_response, status_code = commit_session()
+    if success:
+        return jsonify(budget.to_dict()), 200
+    else:
+        return error_response, status_code
