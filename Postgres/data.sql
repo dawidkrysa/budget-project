@@ -2,6 +2,7 @@ DO
 $$
     DECLARE
         new_budget_id uuid;
+        new_month_id uuid;
     BEGIN
         INSERT INTO public.budgets (name)
         VALUES ('My Family Budget')
@@ -30,13 +31,14 @@ $$
         INSERT INTO public.category_groups (name, budget_id)
         VALUES ('Monthly Expenses', new_budget_id);
 
-        INSERT INTO public.categories (name, category_group_id, budget_id)
-        SELECT 'Groceries', cg.id, cg.budget_id
+        INSERT INTO public.months (month, year, budget_id)
+        VALUES (7, 2025, new_budget_id)
+        RETURNING id INTO new_month_id;
+
+        INSERT INTO public.categories (name, category_group_id, budget_id, month_id)
+        SELECT 'Groceries', cg.id, cg.budget_id, new_month_id
         FROM public.category_groups cg
         WHERE cg.name = 'Monthly Expenses';
-
-        INSERT INTO public.months (month, year, budget_id)
-        VALUES (7, 2025, new_budget_id);
 
         INSERT INTO public.transactions (date, category_id, account_id, payee_id, amount, memo, budget_id)
         SELECT CURRENT_DATE,
