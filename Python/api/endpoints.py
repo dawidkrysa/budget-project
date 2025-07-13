@@ -200,11 +200,10 @@ def update_transaction(budget_id, transaction_id):
         payee, _ = get_payee(budget_id, payee_name)
         category, _ = get_category_month(budget_id, data['category_id'], datetime.strptime(data['date'], "%Y-%m-%d").date())
 
-
         # Update transaction fields
         transaction.date = data.get('date', transaction.date)
         transaction.account_id = data.get('account_id', transaction.account_id)
-        transaction.category_id = data.get(category.id, transaction.category_id)
+        transaction.category_id = category.id
         transaction.payee_id = payee.id
         transaction.memo = data.get('memo', transaction.memo)
         transaction.amount = data.get('amount', transaction.amount)
