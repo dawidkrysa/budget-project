@@ -9,6 +9,9 @@ document.querySelector('#accordionFlushMain').addEventListener("change", event =
     const listItem = input.closest("li.list-group-item");
     const categoryName = listItem ? listItem.querySelector("span").textContent : "Unknown";
 
+    if (input.value < 0) {
+      input.value = 0;
+    }
 
     const url = new URL(mainURL + '/categories', window.location.origin);
     url.searchParams.append('category_name', categoryName);
