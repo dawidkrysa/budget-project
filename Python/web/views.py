@@ -3,26 +3,40 @@ from flask import Blueprint, render_template
 from collections import defaultdict
 from models.models import Transaction, Category, Budget, db, Month
 from sqlalchemy import desc, func, extract
+import datetime
+import calendar
+
 web = Blueprint('web', __name__)
 
 
 @web.route('/')
 def home():
     budget = Budget.query.first() # TODO: To be replaced
-    categories_data = Category.query.filter_by(
-        budget_id= budget.id,
-        deleted= False,
-        hidden= False
-    ).all()
+    x = datetime.datetime.now()
+    current_month = Month.query.filter_by(year=x.year, month=x.month, deleted=False, budget_id=budget.id).first()
+    all_months = Month.query.filter_by(deleted=False, budget_id=budget.id).order_by(Month.year.desc(),Month.month.desc()).all()
 
-    result = defaultdict(list)
-    for c in categories_data:
-        result[c.category_group.name].append(c)
+    result = {}
+    for month in all_months:
+
+        categories_data = Category.query.filter_by(
+            budget_id= budget.id,
+            deleted= False,
+            hidden= False,
+            month_id = month.id
+        ).all()
+
+        tmp = defaultdict(list)
+        for c in categories_data:
+            tmp[c.category_group.name].append(c)
+
+        result[f"{calendar.month_name[month.month]} {month.year}"] = dict(tmp)
 
     return render_template('home.html',
                            active_page='home',
-                           categories_dict = dict(result),
-                           budget_id = budget.id)
+                           all_categories = result,
+                           budget_id = budget.id,
+                           to_be_budgeted = current_month.to_be_budgeted)
 
 @web.route('/transactions')
 def transactions():
@@ -36,7 +50,7 @@ def transactions():
 
         headings = ('Date', 'Account', 'Payee', 'Category', 'Note', 'Amount')
         data = tuple(
-            (t.date, t.account.name, t.payee.name, t.category.name, t.memo, t.amount)
+            (t.date, t.account.name, t.payee.name, t.category.category_name.name, t.memo, t.amount)
             for t in transactions_data
         )
 

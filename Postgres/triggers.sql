@@ -38,13 +38,17 @@ BEGIN
     UPDATE categories
     SET activity = COALESCE((
         SELECT SUM(CASE
-            WHEN deleted IS FALSE THEN amount
+            WHEN t.deleted IS FALSE THEN t.amount
             ELSE 0
         END)
-        FROM transactions
-        WHERE category_id = NEW.category_id
+        FROM transactions t
+        JOIN months m ON EXTRACT(MONTH FROM t.date) = m.month AND EXTRACT(YEAR FROM t.date) = m.year
+        WHERE t.category_id = NEW.category_id
+          AND m.id = categories.month_id
     ), 0)
-    WHERE id = NEW.category_id;
+    WHERE id = NEW.category_id
+      AND month_id = (SELECT id FROM months WHERE month = EXTRACT(MONTH FROM NEW.date)
+                                            AND year = EXTRACT(YEAR FROM NEW.date));
 
     RETURN NEW;
 END;
@@ -113,6 +117,7 @@ CREATE TRIGGER trg_update_category_balance
 BEFORE INSERT OR UPDATE ON categories
 FOR EACH ROW
 EXECUTE FUNCTION update_category_balance();
+
 
 UPDATE transactions SET id = id;
 UPDATE categories SET id = id;

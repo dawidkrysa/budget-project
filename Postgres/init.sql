@@ -17,6 +17,7 @@ CREATE TABLE IF NOT EXISTS public.accounts
 
 CREATE TABLE IF NOT EXISTS public.months
 (
+    id uuid NOT NULL DEFAULT gen_random_uuid(),
     month integer NOT NULL,
     year integer NOT NULL,
     budgeted numeric(15, 2) NOT NULL DEFAULT 0,
@@ -38,8 +39,14 @@ CREATE TABLE IF NOT EXISTS public.categories
     budgeted numeric(15, 2) NOT NULL DEFAULT 0,
     activity numeric(15, 2) NOT NULL DEFAULT 0,
     balance numeric(15, 2) NOT NULL DEFAULT 0,
-    CONSTRAINT categories_pkey PRIMARY KEY (id),
-    CONSTRAINT categories_name_key UNIQUE (name)
+    month_id uuid NOT NULL,
+    CONSTRAINT categories_pkey PRIMARY KEY (id)
+);
+
+CREATE TABLE IF NOT EXISTS public.category_names
+(
+    id uuid NOT NULL DEFAULT gen_random_uuid() PRIMARY KEY,
+    name text COLLATE pg_catalog."default" NOT NULL UNIQUE
 );
 
 CREATE TABLE IF NOT EXISTS public.payees
@@ -59,7 +66,7 @@ CREATE TABLE IF NOT EXISTS public.transactions
     date date NOT NULL,
     category_id uuid,
     account_id uuid NOT NULL,
-    payee_id bigint NOT NULL,
+    payee_id uuid NOT NULL,
     amount numeric(15, 2) NOT NULL,
     memo text COLLATE pg_catalog."default",
     deleted boolean DEFAULT false,
@@ -198,5 +205,19 @@ ALTER TABLE IF EXISTS public.category_groups
     ON UPDATE NO ACTION
     ON DELETE SET NULL
     NOT VALID;
+
+ALTER TABLE IF EXISTS public.categories
+    ADD FOREIGN KEY (month_id)
+    REFERENCES public.months (id) MATCH SIMPLE
+    ON UPDATE NO ACTION
+    ON DELETE SET NULL
+    NOT VALID;
+
+ALTER TABLE public.categories
+    ADD CONSTRAINT fk_category_name
+    FOREIGN KEY (category_name_id)
+    REFERENCES public.category_names (id)
+    ON UPDATE CASCADE
+    ON DELETE RESTRICT;
 
 END;

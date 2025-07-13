@@ -3,72 +3,68 @@
 // ==========================
 let mainURL = '/api/v1/budgets/ed903d5b-3ff2-4603-9f0a-d1061efd24f4' // TODO: To be replaced
 
-document.querySelector('#accordionFlushMain').addEventListener("change", event => {
-  const input = event.target;
-  if (input.matches("input[type='number']")) {
-    const listItem = input.closest("li.list-group-item");
-    const categoryName = listItem ? listItem.querySelector("span").textContent : "Unknown";
+// Function to initialize input listeners inside an accordion container
+function initAccordionInputs(accordion) {
+    accordion.querySelectorAll("input[type='number']").forEach(input => {
+        input.addEventListener("change", event => {
+            const input = event.target;
+            if (input.value < 0) {
+                input.value = 0;
+            }
 
-    if (input.value < 0) {
-      input.value = 0;
-    }
+            const listItem = input.closest("li.list-group-item");
+            const categoryName = listItem ? listItem.querySelector("span").textContent : "Unknown";
 
-    const url = new URL(mainURL + '/categories', window.location.origin);
-    url.searchParams.append('category_name', categoryName);
+            fetch(mainURL + `/categories/${input.id}`, {
+                method: 'PATCH',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify({assigned: input.value})
+            })
+                .then(response => {
+                    if (!response.ok) throw new Error('Failed to update');
+                    return response.json();
+                })
+                .then(updatedData => {
+                    console.log('Updated categories:', updatedData);
+                    return fetch(window.location.href);  // fetch current page HTML
+                })
+                .then(response => response.text())
+                .then(html => {
+                    // Remember which collapse is open inside this accordion
+                    const openItem = accordion.querySelector(".accordion-collapse.show");
+                    const openId = openItem ? openItem.id : null;
 
-    fetch(url, {
-      method: 'GET',
-      headers: {'Content-Type': 'application/json'}
-    })
-    .then(response => {
-      if (!response.ok) throw new Error('Failed to get');
-      return response.json();
-    })
-    .then(data => {
-      console.log('Categories:', data);
-      if (data.length > 0) {
-        const id = data[0].id;
-        console.log(`Category ID: ${id}, updating assigned to ${input.value}`);
-        return fetch(mainURL + `/categories/${id}`, {
-          method: 'PATCH',
-          headers: {'Content-Type': 'application/json'},
-          body: JSON.stringify({assigned: input.value})
+                    const parser = new DOMParser();
+                    const doc = parser.parseFromString(html, 'text/html');
+
+                    // Find the updated accordion with the same ID in the fresh HTML
+                    const newAccordion = doc.getElementById(accordion.id);
+
+                    if (newAccordion) {
+                        accordion.innerHTML = newAccordion.innerHTML;
+
+                        // Re-initialize Bootstrap collapse and restore open state
+                        if (openId) {
+                            const newOpenItem = accordion.querySelector(`#${openId}`);
+                            if (newOpenItem) {
+                                const bsCollapse = new bootstrap.Collapse(newOpenItem, {toggle: false});
+                                bsCollapse.show();
+                            }
+                        }
+
+                        // Reattach event listeners after replacing innerHTML
+                        initAccordionInputs(accordion);
+                    }
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    alert(`Error processing category "${categoryName}": ${error}`);
+                });
         });
-      } else {
-        throw new Error('No matching category found');
-      }
-    })
-    .then(response => {
-      if (!response.ok) throw new Error('Failed to update');
-      return response.json();
-    })
-    .then(updatedData => {
-      console.log('Updated categories:', updatedData);
-      // alert(`Updated category "${categoryName}" to assigned=${input.value}`);
-      return fetch('/');
-    })
-    .then(response => response.text())
-    .then(html => {
-      const openItem = document.querySelector("#accordionFlushMain .accordion-collapse.show");
-      const openId = openItem ? openItem.id : null;
-
-      const parser = new DOMParser();
-      const doc = parser.parseFromString(html, 'text/html');
-      const newAccordion = doc.querySelector('#accordionFlushMain');
-
-      document.querySelector('#accordionFlushMain').innerHTML = newAccordion.innerHTML;
-
-      if (openId) {
-        const newOpenItem = document.querySelector(`#${openId}`);
-        if (newOpenItem) {
-          const bsCollapse = new bootstrap.Collapse(newOpenItem, { toggle: false });
-          bsCollapse.show();
-        }
-      }
-    })
-    .catch(error => {
-      console.error('Error:', error);
-      alert(`Error processing category "${categoryName}": ${error}`);
     });
-  }
+}
+
+// Initialize all accordions on page load
+document.querySelectorAll('[id^="accordionFlushMain"]').forEach(accordion => {
+    initAccordionInputs(accordion);
 });

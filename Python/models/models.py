@@ -36,12 +36,12 @@ class Account(BaseModel):
 
 class Category(BaseModel):
     """
-    Represents a transaction category.
+    Represents a transaction category for a specific month.
     """
     __tablename__ = 'categories'
 
     id = db.Column(db.String(36), primary_key=True, default=lambda: str(uuid.uuid4()))
-    name = db.Column(db.Text, nullable=False, unique=True)
+    category_name_id = db.Column(db.String(36), db.ForeignKey('category_names.id'), nullable=False)
     category_group_id = db.Column(db.String(36), db.ForeignKey('category_groups.id'), nullable=False)
     hidden = db.Column(db.Boolean, default=False)
     deleted = db.Column(db.Boolean, default=False)
@@ -49,9 +49,23 @@ class Category(BaseModel):
     budgeted = db.Column(db.Numeric(15, 2), default=0)
     activity = db.Column(db.Numeric(15, 2), default=0)
     balance = db.Column(db.Numeric(15, 2), default=0)
+    month_id = db.Column(db.String(36), db.ForeignKey('months.id'), nullable=False)
 
     transactions = db.relationship('Transaction', back_populates='category')
     category_group = db.relationship('CategoryGroup', back_populates='categories')
+    month = db.relationship('Month', back_populates='categories')
+    category_name = db.relationship('CategoryName', back_populates='categories')
+
+class CategoryName(BaseModel):
+    """
+    Represents the category name (normalized across months).
+    """
+    __tablename__ = 'category_names'
+
+    id = db.Column(db.String(36), primary_key=True, default=lambda: str(uuid.uuid4()))
+    name = db.Column(db.Text, nullable=False, unique=True)
+
+    categories = db.relationship('Category', back_populates='category_name')
 
 # -------------------------------
 # CategoryGroup Model
@@ -100,6 +114,7 @@ class Month(BaseModel):
     """
     __tablename__ = 'months'
 
+    id = db.Column(db.String(36), primary_key=True, default=lambda: str(uuid.uuid4()))
     month = db.Column(db.Integer, primary_key=True)
     year = db.Column(db.Integer, primary_key=True)
     budgeted = db.Column(db.Numeric(15, 2), default=0)
@@ -107,6 +122,8 @@ class Month(BaseModel):
     to_be_budgeted = db.Column(db.Numeric(15, 2), default=0)
     deleted = db.Column(db.Boolean, default=False)
     budget_id = db.Column(db.String(36), db.ForeignKey('budgets.id'), nullable=False)
+
+    categories = db.relationship('Category', back_populates='month')
 
 # -------------------------------
 # Payee Model

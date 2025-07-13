@@ -1,9 +1,9 @@
 #!/usr/bin/env python3
 from flask import Blueprint, jsonify, request
-from models.models import db, Transaction, Payee, Category, Account, Budget
+from models.models import db, Transaction, Payee, Category, Account, Budget, CategoryName, Month
 from sqlalchemy import func
 from sqlalchemy.exc import IntegrityError, DataError, OperationalError, ProgrammingError, StatementError, InvalidRequestError, DBAPIError
-from datetime import date
+from datetime import date, datetime
 import sys
 api = Blueprint('api', __name__, url_prefix='/api/v1/budgets/<string:budget_id>')
 
@@ -48,16 +48,49 @@ def get_payee(budget_id, payee_name: str):
     db.session.flush()  # Get ID without committing
     return new_payee, True
 
+def get_category_month(budget_id, category_name_id: str, transaction_date: date):
+    """
+    Return an existing Category.
+    """
+    month = (
+        Month.query
+        .filter_by(budget_id=budget_id, month=transaction_date.month, year=transaction_date.year)
+        .first()
+    )
+    if not month:
+        month = Month(
+            month=transaction_date.month,
+            year=transaction_date.year,
+            budgeted=0,
+            activity=0,
+            to_be_budgeted=0,
+            deleted=False,
+            budget_id=budget_id
+        )
+        db.session.add(month)
+        db.session.flush()  # gets month.id
+
+    category = (
+        Category.query
+        .filter_by(
+            budget_id=budget_id,
+            category_name_id=category_name_id,
+            month_id=month.id
+        )
+        .first()
+    )
+
+    if category:
+        return category, False
+
+    return category, True
+
 
 def get_form_data(budget_id):
     """
     Retrieve form data for transactions: categories, payees, accounts.
     """
-    categories = [{'id': c.id, 'name': c.name} for c in Category.query.filter_by(
-        budget_id= budget_id,
-        deleted= False,
-        hidden= False
-    ).all()]
+    categories = [{'id': c.id, 'name': c.name} for c in CategoryName.query.all()]
     payees = [{'id': p.id, 'name': p.name} for p in Payee.query.filter_by(
         budget_id= budget_id,
         deleted= False
@@ -165,11 +198,13 @@ def update_transaction(budget_id, transaction_id):
             return jsonify({"status": "error", "message": "Payee name is required."}), 400
 
         payee, _ = get_payee(budget_id, payee_name)
+        category, _ = get_category_month(budget_id, data['category_id'], datetime.strptime(data['date'], "%Y-%m-%d").date())
+
 
         # Update transaction fields
         transaction.date = data.get('date', transaction.date)
         transaction.account_id = data.get('account_id', transaction.account_id)
-        transaction.category_id = data.get('category_id', transaction.category_id)
+        transaction.category_id = data.get(category.id, transaction.category_id)
         transaction.payee_id = payee.id
         transaction.memo = data.get('memo', transaction.memo)
         transaction.amount = data.get('amount', transaction.amount)
@@ -210,12 +245,13 @@ def add_transaction(budget_id):
         return jsonify({"status": "error", "message": "Payee name is required."}), 400
 
     payee, _ = get_payee(budget_id, payee_name)
+    category, _ = get_category_month(budget_id, data['category_id'], datetime.strptime(data['date'], "%Y-%m-%d").date())
 
     transaction = Transaction(
         date=data['date'],
         account_id=data['account_id'],
         payee_id=payee.id,
-        category_id=data['category_id'],
+        category_id=category.id,
         amount=data['amount'],
         memo=data.get('memo'),
         budget_id = budget_id
@@ -265,7 +301,7 @@ def transaction_add_form_data(budget_id, transaction_id):
         'date': transaction.date.isoformat() if transaction.date else None,
         'account_id': transaction.account_id,
         'payee_name': transaction.payee.name,
-        'category_id': transaction.category_id,
+        'category_id': transaction.category.category_name.id,
         'memo': transaction.memo,
         'amount': float(transaction.amount),
         'categories': categories,
