@@ -79,7 +79,7 @@ budget-project/
 ├── Postgres/
 │   ├── init.sql                # DB schema
 │   ├── DB.erd.json             # DB ERD Diagram
-│   └── init_data.sql           # Sample seed data
+│   └── data.sql           # Sample seed data
 ├── docker-compose.yml          # Docker orchestration
 └── README.md                   # Project documentation
 ```
@@ -167,7 +167,7 @@ _For more examples, please refer to the [Documentation](https://example.com)_
 ### 🧱 Backend Tasks
 - [X] Flask blueprints for modular code
 - [X] PostgreSQL schema (based on ERD)
-- [X] Seed scripts for dev setup (`init_data.sql`)
+- [X] Seed scripts for dev setup (`data.sql`)
 - [X] Use SQLAlchemy
 
 ### 💻 Frontend Tasks
