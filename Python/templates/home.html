@@ -35,7 +35,7 @@
     Categories list
 ========================== -->
 <div class="accordion accordion-flush" id="accordionFlushMain">
-  {% for main_category, categories in main_categories.items() %}
+  {% for main_category, categories in categories_dict.items() %}
     <div class="accordion-item" style="padding: 0">
       <div class="accordion-header d-flex align-items-center flex-wrap" id="flush-heading{{ loop.index }}" style="padding: 15px">
         <button class="accordion-button collapsed me-3" type="button"
@@ -68,7 +68,7 @@
                 <span style="padding-left: 0;">{{ category.name }}</span>
                 <div class="amounts d-flex gap-2 ms-auto flex-wrap">
                   <label>
-                    <input type="number" step="0.01" min="0" placeholder="0.00" class="form-control form-control-sm" style="min-width: 60px; flex: 1 1 60px;"  value="{{ category.assigned or '' }}">
+                    <input type="number" step="0.01" min="0" placeholder="0.00" class="form-control form-control-sm" style="min-width: 60px; flex: 1 1 60px;"  value="{{ category.budgeted or '' }}">
                   </label>
                   <label>
                     <input type="number" step="0.01" min="0" placeholder="0.00"  class="form-control form-control-sm" style="min-width: 60px; flex: 1 1 60px;" value="{{ category.activity or '' }}" disabled>

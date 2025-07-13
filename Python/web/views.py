@@ -1,46 +1,20 @@
 #!/usr/bin/env python3
 from flask import Blueprint, render_template
-from sys import path
-from models.models import Transaction, Category, Budget, db
+from collections import defaultdict
+from models.models import Transaction, Category, Budget, db, Month
 from sqlalchemy import desc, func, extract
 web = Blueprint('web', __name__)
 
 @web.route('/')
 def home():
-    year = 2025
-    month = 7
+    budget = Budget.query.first()
+    categories_data = Category.query.filter(Category.budget_id == budget.id).all()
 
-    categories_data = Category.query.filter(Category.main_category_id.isnot(None)).all()
-
-    result = {}
-
+    result = defaultdict(list)
     for c in categories_data:
-        main_cat_name = c.main_category.name
-        if main_cat_name not in result:
-            result[main_cat_name] = []
+        result[c.category_group.name].append(c)
 
-        # Find budget for this category with year=2025, month=7
-        budget = Budget.query.filter_by(category_id=c.id, year=year, month=month).first()
-        assigned = budget.assigned if budget else None
-
-        # Get activity sum from transactions in this category for year/month
-        activity = db.session.query(func.coalesce(func.sum(Transaction.amount), 0)) \
-            .filter(Transaction.category_id == c.id) \
-            .filter(extract('year', Transaction.date) == year) \
-            .filter(extract('month', Transaction.date) == month) \
-            .scalar()
-
-        cat_info = {
-            "name": c.name,
-            "assigned": assigned,
-            "available": assigned - activity,
-            "activity": activity
-        }
-
-        result[main_cat_name].append(cat_info)
-
-
-    return render_template('home.html', active_page='home', main_categories = result)
+    return render_template('home.html', active_page='home', categories_dict = dict(result))
 
 @web.route('/transactions')
 def transactions():
