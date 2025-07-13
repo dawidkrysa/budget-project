@@ -1,111 +1,202 @@
-CREATE TABLE IF NOT EXISTS accounts
+BEGIN;
+CREATE EXTENSION IF NOT EXISTS "pgcrypto";
+
+
+CREATE TABLE IF NOT EXISTS public.accounts
 (
-  id     integer GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
-  name   text    NOT NULL UNIQUE,
-  hidden boolean DEFAULT false
+    id uuid NOT NULL DEFAULT gen_random_uuid() PRIMARY KEY,
+    name text COLLATE pg_catalog."default" NOT NULL,
+    type_id uuid,
+    deleted boolean DEFAULT false,
+    balance numeric(15, 2),
+    transfer_payee_id uuid,
+    budget_id uuid NOT NULL,
+    CONSTRAINT accounts_pkey PRIMARY KEY (id),
+    CONSTRAINT accounts_name_key UNIQUE (name)
 );
 
-CREATE TABLE IF NOT EXISTS categories
+CREATE TABLE IF NOT EXISTS public.months
 (
-  id               integer GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
-  name             text    NOT NULL UNIQUE,
-  main_category_id integer,
-  hidden           boolean DEFAULT false,
-  CONSTRAINT FK_main_category FOREIGN KEY (main_category_id) REFERENCES categories (id)
+    month integer NOT NULL,
+    year integer NOT NULL,
+    budgeted numeric(15, 2) NOT NULL DEFAULT 0,
+    activity numeric(15, 2) NOT NULL DEFAULT 0,
+    to_be_budgeted numeric(15, 2) NOT NULL DEFAULT 0,
+    deleted boolean DEFAULT false,
+    budget_id uuid NOT NULL,
+    CONSTRAINT budget_pkey PRIMARY KEY (id)
 );
 
-CREATE TABLE IF NOT EXISTS budget
+CREATE TABLE IF NOT EXISTS public.categories
 (
-  id          integer GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
-  month       integer NOT NULL,
-  year        integer NOT NULL,
-  assigned      decimal(15,2) NOT NULL,
-  category_id integer NOT NULL,
-  CONSTRAINT FK_categories_TO_budget FOREIGN KEY (category_id) REFERENCES categories (id)
+    id uuid NOT NULL DEFAULT gen_random_uuid() PRIMARY KEY,
+    name text COLLATE pg_catalog."default" NOT NULL,
+    category_group_id uuid NOT NULL,
+    hidden boolean DEFAULT false,
+    deleted boolean DEFAULT false,
+    budget_id uuid NOT NULL,
+    budgeted numeric(15, 2) NOT NULL DEFAULT 0,
+    activity numeric(15, 2) NOT NULL DEFAULT 0,
+    balance numeric(15, 2) NOT NULL DEFAULT 0,
+    CONSTRAINT categories_pkey PRIMARY KEY (id),
+    CONSTRAINT categories_name_key UNIQUE (name)
 );
 
-CREATE TABLE IF NOT EXISTS payees
+CREATE TABLE IF NOT EXISTS public.payees
 (
-  id   bigint GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
-  name text   NOT NULL UNIQUE
+    id uuid NOT NULL DEFAULT gen_random_uuid() PRIMARY KEY,
+    name text COLLATE pg_catalog."default" NOT NULL,
+    transfer_account_id uuid,
+    deleted boolean DEFAULT false,
+    budget_id uuid NOT NULL,
+    CONSTRAINT payees_pkey PRIMARY KEY (id),
+    CONSTRAINT payees_name_key UNIQUE (name)
 );
 
-CREATE TABLE IF NOT EXISTS transactions
+CREATE TABLE IF NOT EXISTS public.transactions
 (
-  id          bigint GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
-  date        date          NOT NULL,
-  amount      decimal(15,2) NOT NULL,
-  category_id integer,
-  account_id  integer       NOT NULL,
-  memo        text,
-  payee_id    bigint        NOT NULL,
-  CONSTRAINT FK_categories_TO_transactions FOREIGN KEY (category_id) REFERENCES categories (id),
-  CONSTRAINT FK_accounts_TO_transactions FOREIGN KEY (account_id) REFERENCES accounts (id),
-  CONSTRAINT FK_payees_TO_transactions FOREIGN KEY (payee_id) REFERENCES payees (id)
+    id uuid NOT NULL DEFAULT gen_random_uuid() PRIMARY KEY,
+    date date NOT NULL,
+    category_id uuid,
+    account_id uuid NOT NULL,
+    payee_id bigint NOT NULL,
+    amount numeric(15, 2) NOT NULL,
+    memo text COLLATE pg_catalog."default",
+    deleted boolean DEFAULT false,
+    budget_id uuid NOT NULL,
+    CONSTRAINT transactions_pkey PRIMARY KEY (id)
 );
 
-CREATE TABLE IF NOT EXISTS users
+CREATE TABLE IF NOT EXISTS public.users
 (
-  id   bigint GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
-  login text   NOT NULL UNIQUE,
-  password text   NOT NULL,
-  active boolean DEFAULT false,
-  email text NOT NULL UNIQUE,
-  CONSTRAINT email_check CHECK (email LIKE '%_@__%.__%'),
-  name text NOT NULL,
-  CONSTRAINT name_check CHECK (name != '')
+    id uuid NOT NULL DEFAULT gen_random_uuid() PRIMARY KEY,
+    login text COLLATE pg_catalog."default" NOT NULL,
+    password text COLLATE pg_catalog."default" NOT NULL,
+    active boolean DEFAULT false,
+    email text COLLATE pg_catalog."default" NOT NULL,
+    name text COLLATE pg_catalog."default" NOT NULL,
+    CONSTRAINT users_pkey PRIMARY KEY (id),
+    CONSTRAINT users_email_key UNIQUE (email),
+    CONSTRAINT users_login_key UNIQUE (login)
 );
 
--- Create a view that shows the account name and the sum of all transactions for that account.
--- The view should only include transactions that are not hidden and categories that are not hidden.
--- The view should be ordered by account name.
-CREATE OR REPLACE VIEW accounts_view AS
-SELECT a.name as account_name, COALESCE(SUM(t.amount), 0) as total FROM accounts a
-LEFT JOIN transactions t ON t.account_id = a.id
-LEFT JOIN categories c ON t.category_id = c.id
-LEFT JOIN categories mc ON c.main_category_id = mc.id
-LEFT JOIN payees p ON t.payee_id = p.id
-WHERE (c.hidden = false OR c.hidden IS NULL) 
-    AND (mc.hidden = false OR mc.hidden IS NULL)
-    AND (a.hidden = false OR a.hidden IS NULL)
-GROUP BY a.id, a.name
-ORDER BY a.name;
+CREATE TABLE IF NOT EXISTS public."accountsType"
+(
+    id uuid,
+    name text NOT NULL,
+    PRIMARY KEY (id)
+);
 
--- Create a view that shows the category name, the main category name, and the total amount spent in that category.
--- The view should only include categories that are not hidden and main categories that are not hidden.
--- The view should be ordered by the category name.
-CREATE OR REPLACE VIEW categories_view AS
-SELECT mc.name as main_category_name, c.name as category_name, SUM(t.amount) as total FROM transactions t
-LEFT JOIN categories c ON t.category_id = c.id
-LEFT JOIN categories mc ON c.main_category_id = mc.id
-LEFT JOIN payees p ON t.payee_id = p.id
-LEFT JOIN accounts a ON t.account_id = a.id
-WHERE (c.hidden = false OR c.hidden IS NULL) 
-  AND (mc.hidden = false OR mc.hidden IS NULL)
-  AND (a.hidden = false OR a.hidden IS NULL)
-GROUP BY t.category_id, mc.name, c.name
-ORDER BY mc.name, c.name;
+CREATE TABLE IF NOT EXISTS public.budgets
+(
+    id uuid,
+    name text,
+    PRIMARY KEY (id)
+);
 
--- Create a view called budget_report that shows available budget for each category in each month of each year.
-CREATE OR REPLACE VIEW budget_report AS
-SELECT  b.month, b.year, mc.name as main_category, c.name AS category,
-    b.assigned, COALESCE(SUM(t.amount), 0) AS activty,
-    b.assigned - COALESCE(SUM(t.amount), 0) AS available
-FROM budget b
-LEFT JOIN transactions t ON b.category_id = t.category_id 
-    AND EXTRACT(YEAR FROM t.date) = b.year 
-    AND EXTRACT(MONTH FROM t.date) = b.month
-JOIN categories c ON b.category_id = c.id
-JOIN categories mc ON c.main_category_id = mc.id
-GROUP BY b.month, b.year, mc.name, c.name, b.assigned
-ORDER BY b.month, b.year, mc.name, c.name, b.assigned;
+CREATE TABLE IF NOT EXISTS public.category_groups
+(
+    id uuid NOT NULL DEFAULT gen_random_uuid() PRIMARY KEY,
+    name text COLLATE pg_catalog."default" NOT NULL,
+    deleted boolean DEFAULT false,
+    budget_id uuid NOT NULL,
+    CONSTRAINT categories_pkey PRIMARY KEY (id),
+    CONSTRAINT categories_name_key UNIQUE (name)
+);
 
--- Create a view that shows all transactions with their account, payee, category, memo, and amount.
-CREATE OR REPLACE VIEW transactions_view AS
-SELECT
-    ROW_NUMBER() OVER (ORDER BY t.date) as Id,
-    t.date, a.name as account_name, p.name as payee_name, c.name as category_name, t.memo, t.amount
-FROM transactions t
-JOIN categories c ON t.category_id = c.id
-JOIN payees p ON t.payee_id = p.id
-JOIN accounts a ON t.account_id = a.id;
+ALTER TABLE IF EXISTS public.accounts
+    ADD FOREIGN KEY (id)
+    REFERENCES public.transactions (account_id) MATCH SIMPLE
+    ON UPDATE NO ACTION
+    ON DELETE SET NULL
+    NOT VALID;
+
+
+ALTER TABLE IF EXISTS public.categories
+    ADD FOREIGN KEY (id)
+    REFERENCES public.transactions (category_id) MATCH SIMPLE
+    ON UPDATE NO ACTION
+    ON DELETE SET NULL
+    NOT VALID;
+
+
+ALTER TABLE IF EXISTS public.payees
+    ADD FOREIGN KEY (transfer_account_id)
+    REFERENCES public.accounts (id) MATCH SIMPLE
+    ON UPDATE NO ACTION
+    ON DELETE SET NULL
+    NOT VALID;
+
+
+ALTER TABLE IF EXISTS public.payees
+    ADD FOREIGN KEY (id)
+    REFERENCES public.transactions (payee_id) MATCH SIMPLE
+    ON UPDATE NO ACTION
+    ON DELETE SET NULL
+    NOT VALID;
+
+
+ALTER TABLE IF EXISTS public."accountsType"
+    ADD FOREIGN KEY (id)
+    REFERENCES public.accounts (type_id) MATCH SIMPLE
+    ON UPDATE NO ACTION
+    ON DELETE SET NULL
+    NOT VALID;
+
+
+ALTER TABLE IF EXISTS public.budgets
+    ADD FOREIGN KEY (id)
+    REFERENCES public.payees (budget_id) MATCH SIMPLE
+    ON UPDATE NO ACTION
+    ON DELETE CASCADE
+    NOT VALID;
+
+
+ALTER TABLE IF EXISTS public.budgets
+    ADD FOREIGN KEY (id)
+    REFERENCES public.accounts (budget_id) MATCH SIMPLE
+    ON UPDATE NO ACTION
+    ON DELETE CASCADE
+    NOT VALID;
+
+
+ALTER TABLE IF EXISTS public.budgets
+    ADD FOREIGN KEY (id)
+    REFERENCES public.transactions (budget_id) MATCH SIMPLE
+    ON UPDATE NO ACTION
+    ON DELETE CASCADE
+    NOT VALID;
+
+
+ALTER TABLE IF EXISTS public.budgets
+    ADD FOREIGN KEY (id)
+    REFERENCES public.categories (budget_id) MATCH SIMPLE
+    ON UPDATE NO ACTION
+    ON DELETE CASCADE
+    NOT VALID;
+
+
+ALTER TABLE IF EXISTS public.budgets
+    ADD FOREIGN KEY (id)
+    REFERENCES public.category_groups (budget_id) MATCH SIMPLE
+    ON UPDATE NO ACTION
+    ON DELETE CASCADE
+    NOT VALID;
+
+
+ALTER TABLE IF EXISTS public.budgets
+    ADD FOREIGN KEY (id)
+    REFERENCES public.months (budget_id) MATCH SIMPLE
+    ON UPDATE NO ACTION
+    ON DELETE CASCADE
+    NOT VALID;
+
+
+ALTER TABLE IF EXISTS public.category_groups
+    ADD FOREIGN KEY (id)
+    REFERENCES public.categories (category_group_id) MATCH SIMPLE
+    ON UPDATE NO ACTION
+    ON DELETE SET NULL
+    NOT VALID;
+
+END;
