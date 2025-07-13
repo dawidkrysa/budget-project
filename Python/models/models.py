@@ -1,7 +1,6 @@
 #!/usr/bin/env python3
 from extensions.database import db
 
-
 # -------------------------------
 # Account Model
 # -------------------------------
@@ -9,20 +8,18 @@ from extensions.database import db
 class Account(db.Model):
     """
     Represents a financial account.
-    Attributes:
-        id (int): Primary key.
-        name (str): Account name, unique and required.
-        hidden (bool): Flag to hide the account.
-        transactions (list): List of associated Transaction objects.
     """
     __tablename__ = 'accounts'
 
-    id = db.Column(db.Integer, primary_key=True)
+    id = db.Column(db.String(36), primary_key=True, default=lambda: str(uuid.uuid4()))  # UUID string
     name = db.Column(db.Text, nullable=False, unique=True)
-    hidden = db.Column(db.Boolean, default=False)
+    type_id = db.Column(db.String(36), db.ForeignKey('accountsType.id'), nullable=True)
+    deleted = db.Column(db.Boolean, default=False)
+    balance = db.Column(db.Numeric(15, 2), nullable=True)
+    transfer_payee_id = db.Column(db.String(36), nullable=True)  # Should be a UUID too
+    budget_id = db.Column(db.String(36), db.ForeignKey('budgets.id'), nullable=False)
 
     transactions = db.relationship('Transaction', back_populates='account')
-
 
 # -------------------------------
 # Category Model
@@ -30,28 +27,39 @@ class Account(db.Model):
 
 class Category(db.Model):
     """
-    Represents a transaction category, optionally linked to a main category.
-    Attributes:
-        id (int): Primary key.
-        name (str): Category name, unique and required.
-        main_category_id (int): Foreign key to parent category.
-        hidden (bool): Flag to hide the category.
-        main_category (Category): Parent category relationship.
-        subcategories (list): List of subcategories.
-        transactions (list): List of associated Transaction objects.
-        budgets (list): List of associated Budget objects.
+    Represents a transaction category.
     """
     __tablename__ = 'categories'
 
-    id = db.Column(db.Integer, primary_key=True)
+    id = db.Column(db.String(36), primary_key=True, default=lambda: str(uuid.uuid4()))
     name = db.Column(db.Text, nullable=False, unique=True)
-    main_category_id = db.Column(db.Integer, db.ForeignKey('categories.id'), nullable=True)
+    category_group_id = db.Column(db.String(36), db.ForeignKey('category_groups.id'), nullable=False)
     hidden = db.Column(db.Boolean, default=False)
+    deleted = db.Column(db.Boolean, default=False)
+    budget_id = db.Column(db.String(36), db.ForeignKey('budgets.id'), nullable=False)
+    budgeted = db.Column(db.Numeric(15, 2), default=0)
+    activity = db.Column(db.Numeric(15, 2), default=0)
+    balance = db.Column(db.Numeric(15, 2), default=0)
 
-    main_category = db.relationship('Category', remote_side=[id], backref='subcategories')
     transactions = db.relationship('Transaction', back_populates='category')
-    budgets = db.relationship('Budget', back_populates='category')
+    category_group = db.relationship('CategoryGroup', back_populates='categories')
 
+# -------------------------------
+# CategoryGroup Model
+# -------------------------------
+
+class CategoryGroup(db.Model):
+    """
+    Represents a group of categories.
+    """
+    __tablename__ = 'category_groups'
+
+    id = db.Column(db.String(36), primary_key=True, default=lambda: str(uuid.uuid4()))
+    name = db.Column(db.Text, nullable=False, unique=True)
+    deleted = db.Column(db.Boolean, default=False)
+    budget_id = db.Column(db.String(36), db.ForeignKey('budgets.id'), nullable=False)
+
+    categories = db.relationship('Category', back_populates='category_group')
 
 # -------------------------------
 # Budget Model
@@ -59,36 +67,37 @@ class Category(db.Model):
 
 class Budget(db.Model):
     """
-    Represents budget allocation for a category in a specific month and year.
-    Attributes:
-        id (int): Primary key.
-        month (int): Month of the budget.
-        year (int): Year of the budget.
-        assigned (Decimal): Amount assigned to the budget.
-        category_id (int): Foreign key to the associated category.
-        category (Category): Relationship to Category model.
+    Represents a budget.
     """
-    __tablename__ = 'budget'
+    __tablename__ = 'budgets'
 
-    id = db.Column(db.Integer, primary_key=True)
-    month = db.Column(db.Integer, nullable=False)
-    year = db.Column(db.Integer, nullable=False)
-    assigned = db.Column(db.Numeric(15, 2), nullable=False)
-    category_id = db.Column(db.Integer, db.ForeignKey('categories.id'), nullable=False)
+    id = db.Column(db.String(36), primary_key=True, default=lambda: str(uuid.uuid4()))
+    name = db.Column(db.Text, nullable=True)
 
-    category = db.relationship('Category', back_populates='budgets')
+    accounts = db.relationship('Account', backref='budget')
+    categories = db.relationship('Category', backref='budget')
+    payees = db.relationship('Payee', backref='budget')
+    transactions = db.relationship('Transaction', backref='budget')
+    category_groups = db.relationship('CategoryGroup', backref='budget')
+    months = db.relationship('Month', backref='budget')
 
-    def to_dict(self):
-        """
-        Converts the Budget object to a dictionary.
-        Returns:
-            dict: Dictionary with column names as keys and attribute values.
-        """
-        data = {}
-        data = {c.name: getattr(self, c.name) for c in self.__table__.columns}
-        data['category_name'] = self.category.name if self.category else None
-        return data
+# -------------------------------
+# Month Model
+# -------------------------------
 
+class Month(db.Model):
+    """
+    Represents a month for budgeting.
+    """
+    __tablename__ = 'months'
+
+    month = db.Column(db.Integer, primary_key=True)
+    year = db.Column(db.Integer, primary_key=True)
+    budgeted = db.Column(db.Numeric(15, 2), default=0)
+    activity = db.Column(db.Numeric(15, 2), default=0)
+    to_be_budgeted = db.Column(db.Numeric(15, 2), default=0)
+    deleted = db.Column(db.Boolean, default=False)
+    budget_id = db.Column(db.String(36), db.ForeignKey('budgets.id'), nullable=False)
 
 # -------------------------------
 # Payee Model
@@ -96,28 +105,18 @@ class Budget(db.Model):
 
 class Payee(db.Model):
     """
-    Represents a payee entity for transactions.
-    Attributes:
-        id (int): Primary key.
-        name (str): Payee name, unique and required.
-        transactions (list): List of associated Transaction objects.
+    Represents a payee entity.
     """
-
     __tablename__ = 'payees'
 
-    id = db.Column(db.BigInteger, primary_key=True)
+    id = db.Column(db.String(36), primary_key=True, default=lambda: str(uuid.uuid4()))
     name = db.Column(db.Text, nullable=False, unique=True)
+    transfer_account_id = db.Column(db.String(36), db.ForeignKey('accounts.id'), nullable=True)
+    deleted = db.Column(db.Boolean, default=False)
+    budget_id = db.Column(db.String(36), db.ForeignKey('budgets.id'), nullable=False)
 
     transactions = db.relationship('Transaction', back_populates='payee')
-
-    def to_dict(self):
-        """
-        Converts the Payee object to a dictionary.
-        Returns:
-            dict: Dictionary with column names as keys and attribute values.
-        """
-        return {c.name: getattr(self, c.name) for c in self.__table__.columns}
-
+    transfer_account = db.relationship('Account')
 
 # -------------------------------
 # Transaction Model
@@ -126,72 +125,22 @@ class Payee(db.Model):
 class Transaction(db.Model):
     """
     Represents a financial transaction.
-    Attributes:
-        id (int): Primary key.
-        date (date): Date of the transaction.
-        amount (Decimal): Transaction amount.
-        category_id (int): Foreign key to Category.
-        account_id (int): Foreign key to Account.
-        memo (str): Optional memo for the transaction.
-        payee_id (int): Foreign key to Payee.
-        category (Category): Relationship to Category.
-        account (Account): Relationship to Account.
-        payee (Payee): Relationship to Payee.
     """
-
     __tablename__ = 'transactions'
 
-    id = db.Column(db.BigInteger, primary_key=True)
+    id = db.Column(db.String(36), primary_key=True, default=lambda: str(uuid.uuid4()))
     date = db.Column(db.Date, nullable=False)
+    category_id = db.Column(db.String(36), db.ForeignKey('categories.id'), nullable=True)
+    account_id = db.Column(db.String(36), db.ForeignKey('accounts.id'), nullable=False)
+    payee_id = db.Column(db.String(36), db.ForeignKey('payees.id'), nullable=False)
     amount = db.Column(db.Numeric(15, 2), nullable=False)
-    category_id = db.Column(db.Integer, db.ForeignKey('categories.id'), nullable=True)
-    account_id = db.Column(db.Integer, db.ForeignKey('accounts.id'), nullable=False)
     memo = db.Column(db.Text, nullable=True)
-    payee_id = db.Column(db.BigInteger, db.ForeignKey('payees.id'), nullable=False)
+    deleted = db.Column(db.Boolean, default=False)
+    budget_id = db.Column(db.String(36), db.ForeignKey('budgets.id'), nullable=False)
 
     category = db.relationship('Category', back_populates='transactions')
     account = db.relationship('Account', back_populates='transactions')
     payee = db.relationship('Payee', back_populates='transactions')
-
-    def to_dict(self):
-        """
-        Converts the Transaction object to a dictionary for JSON serialization.
-        Returns:
-            dict: Dictionary representation of the transaction.
-        """
-        return {
-            'id': self.id,
-            'date': self.date.isoformat() if self.date else None,
-            'amount': float(self.amount),  # convert Decimal to float for JSON
-            'category': {
-                'id': self.category.id,
-                'name': self.category.name
-            } if self.category else None,
-            'account': {
-                'id': self.account.id,
-                'name': self.account.name
-            } if self.account else None,
-            'memo': self.memo,
-            'payee': {
-                'id': self.payee.id,
-                'name': self.payee.name
-            } if self.payee else None,
-        }
-
-    def delete(self):
-        """
-        Deletes the transaction from the database.
-        Returns:
-            tuple: (success (bool), error_message (str or None))
-        """
-        try:
-            db.session.delete(self)
-            db.session.commit()
-            return True, None
-        except Exception as e:
-            db.session.rollback()
-            return False, str(e)
-
 
 # -------------------------------
 # User Model
@@ -200,19 +149,27 @@ class Transaction(db.Model):
 class User(db.Model):
     """
     Represents a user of the system.
-    Attributes:
-        id (int): Primary key.
-        login (str): Unique login identifier.
-        password (str): User password (hashed).
-        active (bool): User activation status.
-        email (str): Unique email address.
-        name (str): User's full name.
     """
     __tablename__ = 'users'
 
-    id = db.Column(db.BigInteger, primary_key=True)
+    id = db.Column(db.String(36), primary_key=True, default=lambda: str(uuid.uuid4()))
     login = db.Column(db.Text, nullable=False, unique=True)
     password = db.Column(db.Text, nullable=False)
     active = db.Column(db.Boolean, default=False)
     email = db.Column(db.Text, nullable=False, unique=True)
     name = db.Column(db.Text, nullable=False)
+
+# -------------------------------
+# AccountsType Model
+# -------------------------------
+
+class AccountsType(db.Model):
+    """
+    Represents the account type.
+    """
+    __tablename__ = 'accountsType'
+
+    id = db.Column(db.String(36), primary_key=True)
+    name = db.Column(db.Text, nullable=False)
+
+    accounts = db.relationship('Account', backref='accountsType')
