@@ -4,9 +4,8 @@ from models.models import db, Transaction, Payee, Category, Account, Budget
 from sqlalchemy import func
 from sqlalchemy.exc import IntegrityError, DataError, OperationalError, ProgrammingError, StatementError, InvalidRequestError, DBAPIError
 from datetime import date
-
-api = Blueprint('api', __name__, url_prefix='/api/v1')
-
+import sys
+api = Blueprint('api', __name__, url_prefix='/api/v1/budgets/<string:budget_id>')
 
 # -------------------------------
 # Health Check Endpoint
@@ -35,13 +34,13 @@ def status():
 # -------------------------------
 # Helper Functions
 # -------------------------------
-def get_payee(payee_name: str):
+def get_payee(budget_id, payee_name: str):
     """
     Return an existing Payee by case-insensitive name, or create a new one.
     """
     existing_payee = db.session.query(Payee).filter(
         func.lower(Payee.name) == payee_name.lower()
-    ).first()
+    ).filter(Payee.budget_id == budget_id).first()
     if existing_payee:
         return existing_payee, False
     new_payee = Payee(name=payee_name)
@@ -50,13 +49,23 @@ def get_payee(payee_name: str):
     return new_payee, True
 
 
-def get_form_data():
+def get_form_data(budget_id):
     """
     Retrieve form data for transactions: categories, payees, accounts.
     """
-    categories = [{'id': c.id, 'name': c.name} for c in Category.query.filter(Category.main_category_id.isnot(None)).all()]
-    payees = [{'id': p.id, 'name': p.name} for p in Payee.query.all()]
-    accounts = [{'id': a.id, 'name': a.name} for a in Account.query.all()]
+    categories = [{'id': c.id, 'name': c.name} for c in Category.query.filter_by(
+        budget_id= budget_id,
+        deleted= False,
+        hidden= False
+    ).all()]
+    payees = [{'id': p.id, 'name': p.name} for p in Payee.query.filter_by(
+        budget_id= budget_id,
+        deleted= False
+    ).all()]
+    accounts = [{'id': a.id, 'name': a.name} for a in Account.query.filter_by(
+        budget_id= budget_id,
+        deleted= False
+    ).all()]
     return categories, payees, accounts
 
 
@@ -109,6 +118,7 @@ def commit_session():
             "status": "error",
             "type": "StatementError",
             "message": "There was an error preparing or executing the database statement.",
+            # "details": str(e.orig)
         }), 400
     except InvalidRequestError as e:
         db.session.rollback()
@@ -129,8 +139,8 @@ def commit_session():
 # Transaction Endpoints
 # -------------------------------
 
-@api.route("/transactions/<int:transaction_id>", methods=['PUT', 'DELETE'])
-def update_transaction(transaction_id):
+@api.route("/transactions/<string:transaction_id>", methods=['PUT', 'DELETE'])
+def update_transaction(budget_id, transaction_id):
     """
     Update or delete a transaction by ID.
     PUT: Update transaction fields including dynamic payee creation.
@@ -141,11 +151,12 @@ def update_transaction(transaction_id):
         return jsonify({"status": "error", "message": "Transaction not found."}), 404
 
     if request.method == 'DELETE':
-        success, error = transaction.delete()
+        transaction.deleted = True
+        success, error_response, status_code=commit_session()
         if success:
             return jsonify({"status": "success", "message": "Transaction deleted."}), 200
         else:
-            return jsonify({"status": "error", "message": error}), 500
+            return jsonify({"status": "error", "message": error_response}), 500
 
     elif request.method == 'PUT':
         data = request.get_json()
@@ -153,7 +164,7 @@ def update_transaction(transaction_id):
         if not payee_name:
             return jsonify({"status": "error", "message": "Payee name is required."}), 400
 
-        payee, _ = get_payee(payee_name)
+        payee, _ = get_payee(budget_id, payee_name)
 
         # Update transaction fields
         transaction.date = data.get('date', transaction.date)
@@ -174,18 +185,18 @@ def update_transaction(transaction_id):
 
 
 @api.route("/transactions", methods=['GET'])
-def get_transactions():
+def get_transactions(budget_id):
     """
     Retrieve all transactions.
     Returns:
         JSON list of all transactions as dictionaries.
     """
-    transactions_data = Transaction.query.all()
+    transactions_data = Transaction.query.filter(Transaction.budget_id == budget_id).all()
     return jsonify([t.to_dict() for t in transactions_data])
 
 
 @api.route("/transactions", methods=['POST'])
-def add_transaction():
+def add_transaction(budget_id):
     """
     Add a new transaction.
     Expects JSON body with required fields including 'payee_name'.
@@ -198,7 +209,7 @@ def add_transaction():
     if not payee_name:
         return jsonify({"status": "error", "message": "Payee name is required."}), 400
 
-    payee, _ = get_payee(payee_name)
+    payee, _ = get_payee(budget_id, payee_name)
 
     transaction = Transaction(
         date=data['date'],
@@ -207,10 +218,12 @@ def add_transaction():
         category_id=data['category_id'],
         amount=data['amount'],
         memo=data.get('memo'),
+        budget_id = budget_id
     )
 
     db.session.add(transaction)
     success, error_response, status_code = commit_session()
+    # print(success, file=sys.stderr)
     if success:
         return jsonify(transaction.to_dict()), 200
     else:
@@ -219,13 +232,13 @@ def add_transaction():
 
 
 @api.route('/transactions/form-data')
-def transaction_form_data():
+def transaction_form_data(budget_id):
     """
     Get supporting data needed for transaction form.
     Returns:
         JSON including categories, payees, accounts, and current date.
     """
-    categories, payees, accounts = get_form_data()
+    categories, payees, accounts = get_form_data(budget_id)
     current_date = date.today().isoformat()
     return jsonify({
         'categories': categories,
@@ -235,8 +248,8 @@ def transaction_form_data():
     })
 
 
-@api.route('/transactions/<int:transaction_id>/form-data')
-def transaction_add_form_data(transaction_id):
+@api.route('/transactions/<string:transaction_id>/form-data')
+def transaction_add_form_data(budget_id, transaction_id):
     """
     Get data and form defaults for editing a specific transaction.
     Returns:
@@ -246,7 +259,7 @@ def transaction_add_form_data(transaction_id):
     if not transaction:
         return jsonify({"status": "error", "message": "Transaction not found."}), 404
 
-    categories, payees, accounts = get_form_data()
+    categories, payees, accounts = get_form_data(budget_id)
 
     return jsonify({
         'date': transaction.date.isoformat() if transaction.date else None,
@@ -266,13 +279,13 @@ def transaction_add_form_data(transaction_id):
 # -------------------------------
 
 @api.route('/payees', methods=['GET', 'POST'])
-def manage_payees():
+def manage_payees(budget_id):
     """
     GET: List all payees.
     POST: Add a new payee.
     """
     if request.method == 'GET':
-        payee_data = Payee.query.all()
+        payee_data = Payee.query.filter(Payee.budget_id == budget_id).all()
         return jsonify([p.to_dict() for p in payee_data]), 200
 
     elif request.method == 'POST':
@@ -285,12 +298,12 @@ def manage_payees():
 
         existing_payee = db.session.query(Payee).filter(
             func.lower(Payee.name) == payee_name.lower()
-        ).first()
+        ).filter(Payee.budget_id == budget_id).first()
 
         if existing_payee:
             return jsonify({"status": "error", "message": "Payee name already exists."}), 403
         else:
-            new_payee = Payee(name=payee_name)
+            new_payee = Payee(name=payee_name, budget_id=budget_id)
             db.session.add(new_payee)
             success, error_response, status_code = commit_session()
             if success:
@@ -302,8 +315,8 @@ def manage_payees():
     return jsonify({"status": "error", "message": "Method not allowed."}), 405
 
 
-@api.route('/payees/<int:payee_id>', methods=['GET', 'PUT', 'PATCH', 'DELETE'])
-def manage_payee(payee_id):
+@api.route('/payees/<string:payee_id>', methods=['GET', 'PUT', 'PATCH', 'DELETE'])
+def manage_payee(budget_id, payee_id):
     """
     Manage a specific payee by ID.
     GET: Retrieve payee info.
@@ -335,8 +348,7 @@ def manage_payee(payee_id):
             return error_response, status_code
 
     elif request.method == 'DELETE':
-
-        db.session.delete(payee)
+        payee.deleted = True
         success, error_response, status_code = commit_session()
         if success:
             return jsonify({"status": "success", "message": "Payee deleted."}), 200
@@ -346,73 +358,56 @@ def manage_payee(payee_id):
     return jsonify({"status": "error", "message": "Method not allowed."}), 405
 
 # -------------------------------
-# Budget Endpoints
+# Categories Endpoints
 # -------------------------------
-
-@api.route('/budgets', methods=['GET','POST'])
-def get_budgets():
+@api.route('/categories', methods=['GET','POST'])
+def get_categories(budget_id):
     """
-    Get all budgets.
-    GET: Retrieve budget list.
+    Get all categories.
+    GET: Retrieve categories list.
     """
     if request.method == 'GET':
         # Get category if it's provided
         category = request.args.get("category_name")
-        year = request.args.get("year")
-        month = request.args.get("month")
 
-        query = Budget.query.join(Budget.category)
+        query = Category.query.filter_by(name=category, budget_id=budget_id)
 
         if category:
-            query =  query.filter(Category.name.ilike(f"%{category}%")) \
-                .filter(Category.main_category_id.isnot(None))
+            query =  query.filter(Category.name.ilike(f"%{category}%"))
 
-        try:
-            year = int(year) if year else None
-            month = int(month) if month else None
-        except ValueError:
-            return jsonify({"status": "error", "message": "Year and month must be integers."}), 400
-
-        if year is not None:
-            query = query.filter(Budget.year == year)
-
-        if month is not None:
-            query = query.filter(Budget.month == month)
-
-        budgets = query.all()
-        return jsonify([b.to_dict() for b in budgets]), 200
+        category = query.all()
+        return jsonify([c.to_dict() for c in category]), 200
 
     elif request.method == 'POST':
         if request.is_json:
-            new_budget = Budget()
-            new_budget.assigned = request.get_json().get('assigned')
-            new_budget.year = request.get_json().get('year')
-            new_budget.month = request.get_json().get('month')
-            new_budget.category_id = request.get_json().get('category_id')
+            new_category = Category()
+            new_category.name = request.form.get("category_name")
+            new_category.category_group_id = request.form.get("category_group_id")
+            new_category.budget_id = budget_id
 
-            db.session.add(new_budget)
+            db.session.add(new_category)
             success, error_response, status_code = commit_session()
             if success:
-                return jsonify(new_budget.to_dict()), 200
+                return jsonify(new_category.to_dict()), 200
             else:
                 return error_response, status_code
 
     return jsonify({"status": "error", "message": "Method not allowed."}), 405
 
-@api.route('/budgets/<int:budget_id>', methods=['PATCH'])
-def update_budget(budget_id):
+@api.route('/categories/<string:category_id>', methods=['PATCH'])
+def update_category(budget_id, category_id):
     """
-    PATCH /budgets/<budget_id>
-    Partially update the budget's assigned amount.
+    PATCH /categories/<category_id>
+    Partially update the category's assigned amount.
     JSON body must include: { "assigned": <number> }
     """
-    budget = Budget.query.get(budget_id)
+    category = Category.query.get(category_id)
     data = request.get_json()
     if not data:
         return jsonify({"status": "error", "message": "Invalid JSON body."}), 400
 
-    if not budget:
-        return jsonify({"status": "error", "message": "Budget not found."}), 404
+    if not category:
+        return jsonify({"status": "error", "message": "Category not found."}), 404
 
     if 'assigned' not in data:
         return jsonify({"status": "error", "message": "'assigned' is required for PATCH."}), 400
@@ -423,10 +418,10 @@ def update_budget(budget_id):
     except (ValueError, TypeError):
         return jsonify({"status": "error", "message": "'assigned' must be a number."}), 400
 
-    budget.assigned = assigned_value
+    category.budgeted = assigned_value
 
     success, error_response, status_code = commit_session()
     if success:
-        return jsonify(budget.to_dict()), 200
+        return jsonify(category.to_dict()), 200
     else:
         return error_response, status_code

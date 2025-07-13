@@ -1,11 +1,20 @@
 #!/usr/bin/env python3
 from extensions.database import db
+import uuid
+
+# -------------------------------
+# BaseModel
+# -------------------------------
+class BaseModel(db.Model):
+    __abstract__ = True
+
+    def to_dict(self):
+        return {c.name: getattr(self, c.name) for c in self.__table__.columns}
 
 # -------------------------------
 # Account Model
 # -------------------------------
-
-class Account(db.Model):
+class Account(BaseModel):
     """
     Represents a financial account.
     """
@@ -25,7 +34,7 @@ class Account(db.Model):
 # Category Model
 # -------------------------------
 
-class Category(db.Model):
+class Category(BaseModel):
     """
     Represents a transaction category.
     """
@@ -48,7 +57,7 @@ class Category(db.Model):
 # CategoryGroup Model
 # -------------------------------
 
-class CategoryGroup(db.Model):
+class CategoryGroup(BaseModel):
     """
     Represents a group of categories.
     """
@@ -65,7 +74,7 @@ class CategoryGroup(db.Model):
 # Budget Model
 # -------------------------------
 
-class Budget(db.Model):
+class Budget(BaseModel):
     """
     Represents a budget.
     """
@@ -85,7 +94,7 @@ class Budget(db.Model):
 # Month Model
 # -------------------------------
 
-class Month(db.Model):
+class Month(BaseModel):
     """
     Represents a month for budgeting.
     """
@@ -103,7 +112,7 @@ class Month(db.Model):
 # Payee Model
 # -------------------------------
 
-class Payee(db.Model):
+class Payee(BaseModel):
     """
     Represents a payee entity.
     """
@@ -122,7 +131,7 @@ class Payee(db.Model):
 # Transaction Model
 # -------------------------------
 
-class Transaction(db.Model):
+class Transaction(BaseModel):
     """
     Represents a financial transaction.
     """
@@ -146,7 +155,7 @@ class Transaction(db.Model):
 # User Model
 # -------------------------------
 
-class User(db.Model):
+class User(BaseModel):
     """
     Represents a user of the system.
     """
@@ -163,7 +172,7 @@ class User(db.Model):
 # AccountsType Model
 # -------------------------------
 
-class AccountsType(db.Model):
+class AccountsType(BaseModel):
     """
     Represents the account type.
     """

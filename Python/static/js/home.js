@@ -1,16 +1,17 @@
+// ==========================
+// Global Variables
+// ==========================
+let mainURL = '/api/v1/budgets/ed903d5b-3ff2-4603-9f0a-d1061efd24f4' // TODO: To be replaced
+
 document.querySelector('#accordionFlushMain').addEventListener("change", event => {
   const input = event.target;
   if (input.matches("input[type='number']")) {
     const listItem = input.closest("li.list-group-item");
     const categoryName = listItem ? listItem.querySelector("span").textContent : "Unknown";
 
-    const year = '2025';
-    const month = '7';
 
-    const url = new URL('/api/v1/budgets', window.location.origin);
+    const url = new URL(mainURL + '/categories', window.location.origin);
     url.searchParams.append('category_name', categoryName);
-    url.searchParams.append('year', year);
-    url.searchParams.append('month', month);
 
     fetch(url, {
       method: 'GET',
@@ -21,18 +22,17 @@ document.querySelector('#accordionFlushMain').addEventListener("change", event =
       return response.json();
     })
     .then(data => {
-      console.log('Budgets:', data);
+      console.log('Categories:', data);
       if (data.length > 0) {
         const id = data[0].id;
-        console.log(`Budget ID: ${id}, updating assigned to ${input.value}`);
-        return fetch(`/api/v1/budgets/${id}`, {
+        console.log(`Category ID: ${id}, updating assigned to ${input.value}`);
+        return fetch(mainURL + `/categories/${id}`, {
           method: 'PATCH',
           headers: {'Content-Type': 'application/json'},
           body: JSON.stringify({assigned: input.value})
         });
       } else {
-        // alert(`No budget found for category "${categoryName}" (${year}-${month})`);
-        throw new Error('No matching budget found');
+        throw new Error('No matching category found');
       }
     })
     .then(response => {
@@ -40,7 +40,7 @@ document.querySelector('#accordionFlushMain').addEventListener("change", event =
       return response.json();
     })
     .then(updatedData => {
-      console.log('Updated budget:', updatedData);
+      console.log('Updated categories:', updatedData);
       // alert(`Updated category "${categoryName}" to assigned=${input.value}`);
       return fetch('/');
     })

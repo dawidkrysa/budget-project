@@ -48,13 +48,13 @@
         <span style="font-weight: bold;">{{ main_category or "No Main Category" }}</span>
         <div class="amounts d-flex gap-2 ms-auto flex-wrap">
           <label>
-            <input type="number" step="0.01" min="0" placeholder="0.00"  class="form-control form-control-sm" style="min-width: 60px; flex: 1 1 60px;" disabled>
+            <input type="number" step="0.01" min="0" placeholder="0.00"  class="form-control form-control-sm" style="min-width: 60px; flex: 1 1 60px;" value="{{ categories | sum(attribute='budgeted') }}" disabled>
           </label>
           <label>
-            <input type="number" step="0.01" min="0" placeholder="0.00"  class="form-control form-control-sm" style="min-width: 60px; flex: 1 1 60px;" disabled>
+            <input type="number" step="0.01" min="0" placeholder="0.00"  class="form-control form-control-sm" style="min-width: 60px; flex: 1 1 60px;" value="{{ categories | sum(attribute='activity') }}" disabled>
           </label>
           <label>
-            <input type="number" step="0.01" min="0" placeholder="0.00"  class="form-control form-control-sm" style="min-width: 60px; flex: 1 1 60px;" disabled>
+            <input type="number" step="0.01" min="0" placeholder="0.00"  class="form-control form-control-sm" style="min-width: 60px; flex: 1 1 60px;" value="{{ categories | sum(attribute='balance') }}" disabled>
           </label>
         </div>
       </div>
@@ -74,7 +74,7 @@
                     <input type="number" step="0.01" min="0" placeholder="0.00"  class="form-control form-control-sm" style="min-width: 60px; flex: 1 1 60px;" value="{{ category.activity or '' }}" disabled>
                   </label>
                   <label>
-                    <input type="number" step="0.01" min="0" placeholder="0.00" class="form-control form-control-sm" style="min-width: 60px; flex: 1 1 60px;" value="{{ category.available or '' }}" disabled>
+                    <input type="number" step="0.01" min="0" placeholder="0.00" class="form-control form-control-sm" style="min-width: 60px; flex: 1 1 60px;" value="{{ category.balance or '' }}" disabled>
                   </label>
                 </div>
               </li>

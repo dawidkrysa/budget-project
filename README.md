@@ -161,7 +161,7 @@ _For more examples, please refer to the [Documentation](https://example.com)_
   - [X] Payees
   - [ ] Categories (with main/sub support)
   - [X] Transactions
-  - [ ] Budget assignments per category/month
+  - [X] Budget assignments per category/month
 - [X] Basic dashboard (list of transactions, budget overview)
 
 ### 🧱 Backend Tasks
@@ -173,7 +173,7 @@ _For more examples, please refer to the [Documentation](https://example.com)_
 ### 💻 Frontend Tasks
 - [X] Jinja2 templates using Bootstrap
 - [X] Transaction form with validation
-- [ ] Monthly budget editor
+- [X] Monthly budget editor
 
 ### 🔄 Budgeting Features
 - [ ] Recurring transactions

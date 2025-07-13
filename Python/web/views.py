@@ -5,22 +5,34 @@ from models.models import Transaction, Category, Budget, db, Month
 from sqlalchemy import desc, func, extract
 web = Blueprint('web', __name__)
 
+
 @web.route('/')
 def home():
-    budget = Budget.query.first()
-    categories_data = Category.query.filter(Category.budget_id == budget.id).all()
+    budget = Budget.query.first() # TODO: To be replaced
+    categories_data = Category.query.filter_by(
+        budget_id= budget.id,
+        deleted= False,
+        hidden= False
+    ).all()
 
     result = defaultdict(list)
     for c in categories_data:
         result[c.category_group.name].append(c)
 
-    return render_template('home.html', active_page='home', categories_dict = dict(result))
+    return render_template('home.html',
+                           active_page='home',
+                           categories_dict = dict(result),
+                           budget_id = budget.id)
 
 @web.route('/transactions')
 def transactions():
     try:
         # ORM query
-        transactions_data = Transaction.query.order_by(desc(Transaction.date)).all()
+        budget = Budget.query.first() # TODO: To be replaced
+        transactions_data = Transaction.query.filter_by(
+        budget_id= budget.id,
+        deleted= False
+        ).order_by(desc(Transaction.date)).all()
 
         headings = ('Date', 'Account', 'Payee', 'Category', 'Note', 'Amount')
         data = tuple(
@@ -44,6 +56,7 @@ def transactions():
             transaction_headings=[],
             transaction_data=[],
             transactions_ids=[],
+            budget_id = budget.id,
             active_page='transactions'
         )
 

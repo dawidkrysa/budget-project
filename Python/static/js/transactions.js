@@ -11,6 +11,7 @@
 // ==========================
 let transactionMode = 'add'; // 'add' or 'edit'
 let transactionIdToEdit = null; // Transaction ID being edited
+let mainURL = '/api/v1/budgets/ed903d5b-3ff2-4603-9f0a-d1061efd24f4'; // TODO: To be replaced
 
 // ==========================
 // Modal Open Event Listeners
@@ -73,9 +74,9 @@ transactionModal.addEventListener('shown.bs.modal', function () {
     contentDiv.innerHTML = 'Loading...';
 
     // API endpoint depends on mode
-    let fetchUrl = '/api/v1/transactions/form-data';
+    let fetchUrl = mainURL + '/transactions/form-data';
     if (transactionMode === 'edit') {
-        fetchUrl = `/api/v1/transactions/${transactionIdToEdit}/form-data`;
+        fetchUrl = mainURL + `/transactions/${transactionIdToEdit}/form-data`;
     }
 
     fetch(fetchUrl)
@@ -124,7 +125,7 @@ transactionModal.addEventListener('shown.bs.modal', function () {
 
                     <div class="mb-3">
                       <label for="transactionAmount" class="form-label">Amount</label>
-                      <input type="number" step="0.01" min="0" class="form-control" id="transactionAmount" name="amount" placeholder="0.00" value="${data.amount || ''}" required>
+                      <input type="number" step="0.01" class="form-control" id="transactionAmount" name="amount" placeholder="0.00" value="${data.amount || ''}" required>
                     </div>
                 </form>
             `;
@@ -158,10 +159,10 @@ saveBtn.addEventListener('click', () => {
     // Determine API endpoint and method
     let endpoint, method;
     if (transactionMode === 'add') {
-        endpoint = '/api/v1/transactions';
+        endpoint = mainURL + '/transactions';
         method = 'POST';
     } else {
-        endpoint = `/api/v1/transactions/${transactionIdToEdit}`;
+        endpoint = mainURL + `/transactions/${transactionIdToEdit}`;
         method = 'PUT';
     }
 
@@ -278,7 +279,7 @@ document.addEventListener('DOMContentLoaded', () => {
     document.getElementById('confirmDeleteBtn').addEventListener('click', () => {
         if (!transactionIdToDelete) return;
 
-        fetch(`/api/v1/transactions/${transactionIdToDelete}`, {
+        fetch(mainURL + `/transactions/${transactionIdToDelete}`, {
             method: 'DELETE',
             headers: { 'Content-Type': 'application/json' },
         })
