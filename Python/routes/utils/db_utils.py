@@ -1,9 +1,15 @@
 #!/usr/bin/env python3
-from Python import db
-from models import Month, Category, Payee
+from functools import wraps
+
+from extensions import db
+from config import Config
+from models import Month, Category, Payee, CategoryName, Account
+from flask import jsonify, request
 from sqlalchemy import func
 from sqlalchemy.exc import IntegrityError, DataError, OperationalError, ProgrammingError, StatementError, InvalidRequestError, DBAPIError
 from datetime import date
+import jwt
+from models import User
 
 # -------------------------------
 # Helper Functions
@@ -141,3 +147,22 @@ def commit_session():
             "type": "UnknownError",
             "message": "An unexpected error occurred while saving to the database.",
         }), 500
+
+# Token decorator for secure routes
+def token_required(f):
+    @wraps(f)
+    def decorated(*args, **kwargs):
+        token = request.cookies.get('jwt_token')
+
+        if not token:
+            return jsonify({'message': 'Token is missing!'}), 401
+
+        try:
+            data = jwt.decode(token, Config.SECRET_KEY, algorithms=["HS256"])
+            current_user = User.query.filter_by(id=data['user_id']).first()
+        except:
+            return jsonify({'message': 'Token is invalid!'}), 401
+
+        return f(current_user, *args, **kwargs)
+
+    return decorated

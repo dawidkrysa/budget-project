@@ -1,18 +1,26 @@
 #!/usr/bin/env python3
-from Python import db
+from extensions import db
 import uuid
 
 # -------------------------------
 # BaseModel
 # -------------------------------
 class BaseModel(db.Model):
+    """Base model class for all database models providing common functionality."""
     __abstract__ = True
 
-    def __init__(self):
-        self.__table__ = None
+    def __init__(self, **kwargs):
+        super().__init__(**kwargs)
 
-    def to_dict(self):
-        return {c.name: getattr(self, c.name) for c in self.__table__.columns}
+    def to_dict(self) -> dict:
+        """Convert model instance to dictionary representation."""
+        result = {}
+        for c in self.__table__.columns:
+            try:
+                result[c.name] = getattr(self, c.name)
+            except AttributeError:
+                result[c.name] = None
+        return result
 
     def __repr__(self):
         values = ", ".join(f"{c.name}={getattr(self, c.name)!r}" for c in self.__table__.columns)

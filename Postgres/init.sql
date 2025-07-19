@@ -87,7 +87,7 @@ CREATE TABLE IF NOT EXISTS public.users
     CONSTRAINT users_login_key UNIQUE (login)
 );
 
-CREATE TABLE IF NOT EXISTS public."accountsType"
+CREATE TABLE IF NOT EXISTS public.accounts_type
 (
     id uuid,
     name text NOT NULL,
@@ -143,7 +143,7 @@ ALTER TABLE IF EXISTS public.payees
     NOT VALID;
 
 
-ALTER TABLE IF EXISTS public."accountsType"
+ALTER TABLE IF EXISTS public.accounts_type
     ADD FOREIGN KEY (id)
     REFERENCES public.accounts (type_id) MATCH SIMPLE
     ON UPDATE NO ACTION
