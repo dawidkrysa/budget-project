@@ -65,23 +65,47 @@ A self-hosted personal budget tracking application inspired by **YNAB**, built w
 ## 📦 Project Structure
 
 ```
-budget-project/
-├── Python/                     # Main Python application source
-│   ├── api/                    # API routes (Flask Blueprints)
-│   ├── extensions/             # Extensions (DB, login manager, etc.)
-│   ├── models/                 # SQLAlchemy models
-│   ├── static/                 # Static assets (CSS, JS)
-│   │   ├── css/                # Stylesheets
-│   │   └── js/                 # JavaScript files
-│   ├── templates/              # Jinja2 HTML templates
-│   │   └── icons/              # SVG or icon partials
-│   └── web/                    # Web page routes / views
-├── Postgres/
-│   ├── init.sql                # DB schema
-│   ├── DB.erd.json             # DB ERD Diagram
-│   └── data.sql           # Sample seed data
-├── docker-compose.yml          # Docker orchestration
-└── README.md                   # Project documentation
+budget-project/                       
+├── Python/                            # Main Python application directory 
+│   ├── app.py                         # Application entry point 
+│   ├── config.py                      # Configuration settings 
+│   ├── requirements.txt               # Python dependencies 
+│   ├── __init__.py                    # Package initializer 
+│   ├── models/                        # Database models 
+│   │   ├── account/                   # Account-related models 
+│   │   ├── budget/                    # Budget-related models 
+│   │   ├── category/                  # Category-related models 
+│   │   ├── month/                     # Month-related models 
+│   │   ├── payee/                     # Payee-related models 
+│   │   ├── transaction/               # Transaction-related models 
+│   │   ├── user/                      # User-related models 
+│   │   ├── base.py                    # Base model definitions 
+│   │   └── __init__.py                # Models package initializer 
+│   ├── routes/                        # API routes and endpoints 
+│   │   ├── utils/                     # Route utilities 
+│   │   │   ├── db_utils.py            # Database helper functions 
+│   │   │   └── __init__.py            # Utils package initializer 
+│   │   ├── api.py                     # Main API blueprint 
+│   │   ├── health.py                  # Health check endpoints 
+│   │   ├── transactions.py            # Transaction endpoints 
+│   │   ├── payees.py                  # Payee endpoints 
+│   │   ├── categories.py              # Category endpoints 
+│   │   └── __init__.py                # Routes package initializer 
+│   ├── tests/                         # Test suite 
+│   │   ├── unit/                      # Unit tests 
+│   │   │   ├── test_views.py          # View tests 
+│   │   │   └── __init__.py            # Unit tests initializer 
+│   │   └── __init__.py                # Tests package initializer 
+│   └── web/                           # Web interface components 
+├── Postgres/                          # PostgreSQL related files 
+├── db/                                # Database migrations and scripts 
+├── extensions/                        # Project extensions (e.g., Flask plugins) 
+├── images/                            # Project images and assets 
+├── docker-compose.yml                # Docker compose configuration 
+├── .env                               # Environment variables 
+├── .gitignore                         # Git ignore rules 
+├── LICENSE.txt                        # Project license 
+└── README.md                          # Project documentation 
 ```
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
 
@@ -100,6 +124,7 @@ POSTGRES_PASSWORD=dawidkrysa
 POSTGRES_DB=budget
 
 # Security & Auth
+JWT_SECRET_KEY="..."
 ACCESS_TOKEN_EXPIRE_MINUTES=30
 ALGORITHM=ES256
 PRIVATE_KEY="..."    # your ES256 private key
@@ -162,7 +187,7 @@ _For more examples, please refer to the [Documentation](https://example.com)_
   - [ ] Categories (with main/sub support)
   - [X] Transactions
   - [X] Budget assignments per category/month
-- [X] Basic dashboard (list of transactions, budget overview)
+- [ ] Basic dashboard (list of transactions, budget overview)
 
 ### 🧱 Backend Tasks
 - [X] Flask blueprints for modular code
@@ -171,9 +196,9 @@ _For more examples, please refer to the [Documentation](https://example.com)_
 - [X] Use SQLAlchemy
 
 ### 💻 Frontend Tasks
-- [X] Jinja2 templates using Bootstrap
-- [X] Transaction form with validation
-- [X] Monthly budget editor
+- [ ] Flutter pages
+- [ ] Transaction form with validation
+- [ ] Monthly budget editor
 
 ### 🔄 Budgeting Features
 - [ ] Recurring transactions
@@ -202,7 +227,7 @@ See the [open issues](https://github.com/dawidkrysa/budget-project/issues) for a
 - **Backend:** Python, Flask
 - **Database:** PostgreSQL
 - **DevOps:** Docker, Docker Compose
-- **Frontend:** HTML (Jinja templates, Bootstrap planned)
+- **Frontend:** Flutter
 
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
 

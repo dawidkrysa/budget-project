@@ -32,10 +32,11 @@ services:
 
   python:
     image: python:3.13.1
-    container_name: python_dev
+    container_name: python-dev
     restart: unless-stopped
     volumes:
       - ./Python:/app
+      - python_venv:/app/venv
     env_file:
       - .env
     working_dir: /app
@@ -47,10 +48,17 @@ services:
       FLASK_APP: ${FLASK_APP}
       FLASK_ENV: ${FLASK_ENV}
       FLASK_DEBUG: ${FLASK_DEBUG}
+      PYTHONPATH: /app
     depends_on:
       - db
     command: >
-      /bin/sh -c "pip install --upgrade pip && pip install -r requirements.txt && flask run --host 0.0.0.0 --port 8000"
+      /bin/sh -c "
+      cd /app &&
+      python -m venv venv &&
+      . venv/bin/activate &&
+      pip install --upgrade pip &&
+      pip install -r requirements.txt &&
+      flask run --host 0.0.0.0 --port 8000"
     networks:
       - scoobydoo
 
@@ -60,7 +68,7 @@ services:
     container_name: nginx-proxy-manager
     ports:
       - '443:443' # Public HTTPS Port
-      # - '81:81' # Admin Web Port. Uncomment if you want to access the admin panel
+#      - '81:81' # Admin Web Port. Uncomment if you want to access the admin panel
     environment:
       DB_POSTGRES_HOST: 'db'
       DB_POSTGRES_PORT: '5432'
@@ -101,3 +109,4 @@ volumes:
   proxy-data:
   proxy-letsencrypt:
   duckdns-logs:
+  python_venv:

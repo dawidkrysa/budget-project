@@ -5,6 +5,9 @@ psycopg2               # PostgreSQL adapter for Python (psycopg2)
 matplotlib             # For creating plots and visualizations
 flask
 flask_sqlalchemy
+flask_migrate
+flask_jwt_extended
+flask_cors
 cryptography           # For secure data encryption and decryption
 
 # Additional libraries
