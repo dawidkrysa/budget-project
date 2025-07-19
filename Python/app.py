@@ -17,7 +17,7 @@ cors.init_app(app)
 
 # Register blueprints
 main_prefix = '/api/v1'
-budget_prefix = '/budgets/<string:budget_id>'
+budget_prefix = '/budgets/<uuid:budget_id>'
 
 app.register_blueprint(user_bp, url_prefix=main_prefix + '/auth')
 app.register_blueprint(transaction_bp, url_prefix=main_prefix + budget_prefix + '/transactions')

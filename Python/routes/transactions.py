@@ -1,9 +1,10 @@
 #!/usr/bin/env python3
 from flask import jsonify, request, Blueprint
-from .utils.db_utils import commit_session, get_payee, get_category_month, get_form_data
+from .utils.db_utils import commit_session, get_payee, get_category_month, get_form_data, token_required
 from models import Transaction
 from extensions import db
 from datetime import datetime, date
+
 
 transaction_bp = Blueprint('transactions', __name__)
 # -------------------------------
@@ -11,7 +12,8 @@ transaction_bp = Blueprint('transactions', __name__)
 # -------------------------------
 
 @transaction_bp.route("/<string:transaction_id>", methods=['PUT', 'DELETE'])
-def update_transaction(budget_id, transaction_id):
+@token_required
+def update_transaction(current_user, budget_id, transaction_id):
     """
     Update or delete a transaction by ID.
     PUT: Update transaction fields including dynamic payee creation.
@@ -56,8 +58,9 @@ def update_transaction(budget_id, transaction_id):
         return jsonify({"status": "error", "message": "Invalid request."}), 400
 
 
-@transaction_bp.route("/", methods=['GET'])
-def get_transactions(budget_id):
+@transaction_bp.route("", methods=['GET'])
+@token_required
+def get_transactions(current_user, budget_id):
     """
     Retrieve all transactions.
     Returns:
@@ -68,7 +71,8 @@ def get_transactions(budget_id):
 
 
 @transaction_bp.route("", methods=['POST'])
-def add_transaction(budget_id):
+@token_required
+def add_transaction(current_user, budget_id):
     """
     Add a new transaction.
     Expects JSON body with required fields including 'payee_name'.
@@ -105,7 +109,8 @@ def add_transaction(budget_id):
 
 
 @transaction_bp.route('/form-data')
-def transaction_form_data(budget_id):
+@token_required
+def transaction_form_data(current_user, budget_id):
     """
     Get supporting data needed for transaction form.
     Returns:
@@ -122,7 +127,8 @@ def transaction_form_data(budget_id):
 
 
 @transaction_bp.route('/<string:transaction_id>/form-data')
-def transaction_add_form_data(budget_id, transaction_id):
+@token_required
+def transaction_add_form_data(current_user, budget_id, transaction_id):
     """
     Get data and form defaults for editing a specific transaction.
     Returns:

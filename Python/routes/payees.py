@@ -1,9 +1,10 @@
 #!/usr/bin/env python3
 from flask import jsonify, request, Blueprint
-from .utils.db_utils import commit_session
+from .utils.db_utils import commit_session, token_required
 from models import Payee
 from extensions import db
 from sqlalchemy import func
+
 
 
 payee_bp = Blueprint('payees', __name__)
@@ -11,8 +12,9 @@ payee_bp = Blueprint('payees', __name__)
 # Payee Endpoints
 # -------------------------------
 
-@payee_bp.route('/', methods=['GET', 'POST'])
-def manage_payees(budget_id):
+@payee_bp.route('', methods=['GET', 'POST'])
+@token_required
+def manage_payees(current_user, budget_id):
     """
     GET: List all payees.
     POST: Add a new payee.
@@ -49,7 +51,8 @@ def manage_payees(budget_id):
 
 
 @payee_bp.route('/<string:payee_id>', methods=['GET', 'PUT', 'PATCH', 'DELETE'])
-def manage_payee(budget_id, payee_id):
+@token_required
+def manage_payee(current_user, budget_id, payee_id):
     """
     Manage a specific payee by ID.
     GET: Retrieve payee info.

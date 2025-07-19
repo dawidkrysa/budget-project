@@ -1,12 +1,13 @@
 #!/usr/bin/env python3
 from flask import jsonify, request, redirect, url_for, make_response, Blueprint
 from extensions import db
-from .utils.db_utils import commit_session
 from models import User
 from werkzeug.security import generate_password_hash, check_password_hash
 import jwt
 from datetime import datetime, timedelta, timezone
 from config import Config
+from .utils.db_utils import commit_session, token_required
+
 
 user_bp = Blueprint('auth', __name__)
 
@@ -62,13 +63,10 @@ def login():
         if not user or not check_password_hash(user.password, password):
             return jsonify({'message': 'Invalid login or password'}), 401
 
-        token = jwt.encode({'public_id': user.public_id, 'exp': datetime.now(timezone.utc) + timedelta(hours=1)},
+        token = jwt.encode({'user_id': str(user.id), 'exp': datetime.now(timezone.utc) + timedelta(hours=1)},
                            Config.SECRET_KEY, algorithm="HS256")
 
-        response = make_response(redirect(url_for('dashboard')))
-        response.set_cookie('jwt_token', token)
+        return jsonify({'token': token})
 
-        return response
-
-    return jsonify({'message': 'Login successful'}), 200
+    return jsonify({'message': 'Send a POST request to login'}), 200
 

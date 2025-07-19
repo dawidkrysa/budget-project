@@ -17,6 +17,7 @@ class Account(BaseModel):
     transfer_payee_id = db.Column(db.String(36), nullable=True)  # Should be a UUID too
     budget_id = db.Column(db.String(36), db.ForeignKey('budgets.id'), nullable=False)
 
+    accountsType = db.relationship('AccountsType', back_populates='accounts')
     transactions = db.relationship('Transaction', back_populates='account')
 
 
