@@ -9,6 +9,7 @@ services:
       - "8000"  # Expose Flutter web server
     stdin_open: true
     tty: true
+    # Uncomment when needed
 #    command: >
 #      bash -c "flutter pub get &&
 #               flutter run -d web-server --web-port=8000 --web-hostname=0.0.0.0"
