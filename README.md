@@ -69,8 +69,8 @@ budget-project/
 ├── Python/                            # Main Python application directory 
 │   ├── app.py                         # Application entry point 
 │   ├── config.py                      # Configuration settings 
+│   ├── extensions.py                  # Database Extensions (eg. Database)  
 │   ├── requirements.txt               # Python dependencies 
-│   ├── __init__.py                    # Package initializer 
 │   ├── models/                        # Database models 
 │   │   ├── account/                   # Account-related models 
 │   │   ├── budget/                    # Budget-related models 
@@ -80,26 +80,19 @@ budget-project/
 │   │   ├── transaction/               # Transaction-related models 
 │   │   ├── user/                      # User-related models 
 │   │   ├── base.py                    # Base model definitions 
-│   │   └── __init__.py                # Models package initializer 
 │   ├── routes/                        # API routes and endpoints 
 │   │   ├── utils/                     # Route utilities 
-│   │   │   ├── db_utils.py            # Database helper functions 
-│   │   │   └── __init__.py            # Utils package initializer 
+│   │   │   └── db_utils.py            # Database helper functions 
 │   │   ├── api.py                     # Main API blueprint 
 │   │   ├── health.py                  # Health check endpoints 
 │   │   ├── transactions.py            # Transaction endpoints 
 │   │   ├── payees.py                  # Payee endpoints 
-│   │   ├── categories.py              # Category endpoints 
-│   │   └── __init__.py                # Routes package initializer 
+│   │   └── categories.py              # Category endpoints 
 │   ├── tests/                         # Test suite 
-│   │   ├── unit/                      # Unit tests 
-│   │   │   ├── test_views.py          # View tests 
-│   │   │   └── __init__.py            # Unit tests initializer 
-│   │   └── __init__.py                # Tests package initializer 
+│   │   └── unit/                      # Unit tests 
+│   │       └── test_views.py          # View tests 
 │   └── web/                           # Web interface components 
 ├── Postgres/                          # PostgreSQL related files 
-├── db/                                # Database migrations and scripts 
-├── extensions/                        # Project extensions (e.g., Flask plugins) 
 ├── images/                            # Project images and assets 
 ├── docker-compose.yml                # Docker compose configuration 
 ├── .env                               # Environment variables 

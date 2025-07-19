@@ -1,0 +1,16 @@
+services:
+  flutter:
+    image: ghcr.io/cirruslabs/flutter:stable
+    container_name: flutter_web
+    working_dir: /app
+    volumes:
+      - ./web_app:/app
+    expose:
+      - "8000"  # Expose Flutter web server
+    stdin_open: true
+    tty: true
+#    command: >
+#      bash -c "flutter pub get &&
+#               flutter run -d web-server --web-port=8000 --web-hostname=0.0.0.0"
+    networks:
+      - scoobydoo

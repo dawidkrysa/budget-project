@@ -2,8 +2,8 @@
 from flask import Blueprint, render_template
 from collections import defaultdict
 from models import Transaction, Category, Budget, Month
-from Python import db
-from sqlalchemy import desc, func, extract
+from backend.Python import db
+from sqlalchemy import desc
 import datetime
 import calendar
 
