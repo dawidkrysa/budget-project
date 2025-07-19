@@ -1,14 +1,17 @@
 #!/usr/bin/env python3
-from flask import jsonify, request
-from .api import api
+from flask import jsonify, request, Blueprint
 from .utils.db_utils import commit_session
 from models import Payee
+from extensions import db
+from sqlalchemy import func
 
+
+payee_bp = Blueprint('payees', __name__)
 # -------------------------------
 # Payee Endpoints
 # -------------------------------
 
-@api.route('/payees', methods=['GET', 'POST'])
+@payee_bp.route('/', methods=['GET', 'POST'])
 def manage_payees(budget_id):
     """
     GET: List all payees.
@@ -45,7 +48,7 @@ def manage_payees(budget_id):
     return jsonify({"status": "error", "message": "Method not allowed."}), 405
 
 
-@api.route('/payees/<string:payee_id>', methods=['GET', 'PUT', 'PATCH', 'DELETE'])
+@payee_bp.route('/<string:payee_id>', methods=['GET', 'PUT', 'PATCH', 'DELETE'])
 def manage_payee(budget_id, payee_id):
     """
     Manage a specific payee by ID.

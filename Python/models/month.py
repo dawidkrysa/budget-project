@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-from ..base import BaseModel, db, uuid
+from models.base import BaseModel, db, uuid
 
 # -------------------------------
 # Month Model

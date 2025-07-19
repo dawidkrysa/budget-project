@@ -45,9 +45,6 @@ services:
     expose:
       - "8000"  # Expose port 8000 for Flask
     environment:
-      FLASK_APP: ${FLASK_APP}
-      FLASK_ENV: ${FLASK_ENV}
-      FLASK_DEBUG: ${FLASK_DEBUG}
       PYTHONPATH: /app
     depends_on:
       - db
@@ -58,7 +55,7 @@ services:
       . venv/bin/activate &&
       pip install --upgrade pip &&
       pip install -r requirements.txt &&
-      flask run --host 0.0.0.0 --port 8000"
+      python app.py"
     networks:
       - scoobydoo
 

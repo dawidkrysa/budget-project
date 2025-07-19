@@ -1,14 +1,16 @@
 #!/usr/bin/env python3
-from flask import jsonify, request
-from .api import api
-from .utils.db_utils import commit_session, get_payee, get_category_month
+from flask import jsonify, request, Blueprint
+from .utils.db_utils import commit_session, get_payee, get_category_month, get_form_data
 from models import Transaction
+from extensions import db
+from datetime import datetime, date
 
+transaction_bp = Blueprint('transactions', __name__)
 # -------------------------------
 # Transaction Endpoints
 # -------------------------------
 
-@api.route("/transactions/<string:transaction_id>", methods=['PUT', 'DELETE'])
+@transaction_bp.route("/<string:transaction_id>", methods=['PUT', 'DELETE'])
 def update_transaction(budget_id, transaction_id):
     """
     Update or delete a transaction by ID.
@@ -54,7 +56,7 @@ def update_transaction(budget_id, transaction_id):
         return jsonify({"status": "error", "message": "Invalid request."}), 400
 
 
-@api.route("/transactions", methods=['GET'])
+@transaction_bp.route("/", methods=['GET'])
 def get_transactions(budget_id):
     """
     Retrieve all transactions.
@@ -65,7 +67,7 @@ def get_transactions(budget_id):
     return jsonify([t.to_dict() for t in transactions_data])
 
 
-@api.route("/transactions", methods=['POST'])
+@transaction_bp.route("", methods=['POST'])
 def add_transaction(budget_id):
     """
     Add a new transaction.
@@ -102,7 +104,7 @@ def add_transaction(budget_id):
 
 
 
-@api.route('/transactions/form-data')
+@transaction_bp.route('/form-data')
 def transaction_form_data(budget_id):
     """
     Get supporting data needed for transaction form.
@@ -119,7 +121,7 @@ def transaction_form_data(budget_id):
     })
 
 
-@api.route('/transactions/<string:transaction_id>/form-data')
+@transaction_bp.route('/<string:transaction_id>/form-data')
 def transaction_add_form_data(budget_id, transaction_id):
     """
     Get data and form defaults for editing a specific transaction.

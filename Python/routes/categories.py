@@ -1,13 +1,15 @@
 #!/usr/bin/env python3
-from flask import jsonify, request
-from .api import api
+from flask import jsonify, request, Blueprint
 from .utils.db_utils import commit_session
 from models import Category
+from extensions import db
+
+category_bp = Blueprint('categories', __name__)
 
 # -------------------------------
 # Categories Endpoints
 # -------------------------------
-@api.route('/categories', methods=['GET','POST'])
+@category_bp.route('/', methods=['GET','POST'])
 def get_categories(budget_id):
     """
     Get all categories.
@@ -41,7 +43,7 @@ def get_categories(budget_id):
 
     return jsonify({"status": "error", "message": "Method not allowed."}), 405
 
-@api.route('/categories/<string:category_id>', methods=['PATCH'])
+@category_bp.route('/<string:category_id>', methods=['PATCH'])
 def update_category(budget_id, category_id):
     """
     PATCH /categories/<category_id>
