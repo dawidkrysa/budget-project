@@ -36,7 +36,8 @@ services:
     restart: unless-stopped
     volumes:
       - ./Python:/app
-      - ./.env:/app/.env:ro  # Mounting the .env file from the main directory to the container
+    env_file:
+      - .env
     working_dir: /app
     stdin_open: true
     tty: true
