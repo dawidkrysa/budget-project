@@ -9,6 +9,8 @@ services:
       - "8000"  # Expose Flutter web server
     stdin_open: true
     tty: true
+    environment:
+      - API_URL=${API_URL}
     # Uncomment when needed
 #    command: >
 #      bash -c "flutter pub get &&

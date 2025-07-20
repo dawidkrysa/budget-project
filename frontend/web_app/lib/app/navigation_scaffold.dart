@@ -1,0 +1,74 @@
+import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
+import 'package:web_app/app/router.dart';
+
+// Widget can be built and might change during the lifetime
+class NavigationScaffold extends StatelessWidget  {
+  final Widget child;
+  const NavigationScaffold({required this.child, super.key});
+
+  // Scaffold is base layout where all information are provided
+  @override
+  Widget build(BuildContext context) {
+    final location = GoRouterState.of(context).uri.toString();
+
+    int selectedIndex = AppRoutes.routes.indexOf(location);
+
+    return Scaffold(
+      // Row place NagivationRail on the left
+      body: Row(
+        children: [
+          NavigationRail(
+            // Highlights current selected tab
+            selectedIndex: selectedIndex,
+            // trigger after user clicking
+            onDestinationSelected: (index) {
+              context.go(AppRoutes.routes[index]);
+            },
+            // Show label only on selected
+            labelType: NavigationRailLabelType.selected,
+            // Empty spacing
+            leading: const SizedBox(height: 16),
+            // List of menu items
+            destinations: const [
+              NavigationRailDestination(
+                padding: EdgeInsets.all(16.0),
+                icon: Icon(Icons.home_outlined),
+                selectedIcon: Icon(Icons.home),
+                label: Text('Budget'),
+              ),
+              NavigationRailDestination(
+                padding: EdgeInsets.all(16.0),
+                icon: Icon(Icons.monetization_on_outlined),
+                selectedIcon: Icon(Icons.monetization_on),
+                label: Text('Transactions'),
+              ),
+              NavigationRailDestination(
+                padding: EdgeInsets.all(16.0),
+                icon: Icon(Icons.account_box_outlined),
+                selectedIcon: Icon(Icons.account_box),
+                label: Text('Accounts'),
+              ),
+              NavigationRailDestination(
+                padding: EdgeInsets.all(16.0),
+                icon: Icon(Icons.insert_chart_outlined_outlined),
+                selectedIcon: Icon(Icons.insert_chart),
+                label: Text('Reports'),
+              ),
+              NavigationRailDestination(
+                padding: EdgeInsets.all(16.0),
+                icon: Icon(Icons.settings_outlined),
+                selectedIcon: Icon(Icons.settings),
+                label: Text('Settings'),
+              ),
+            ],
+          ),
+          // Seperated navigation from main context
+          const VerticalDivider(thickness: 1, width: 1),
+          // Selected page will take up remaining space
+          Expanded(child: child),
+        ],
+      ),
+    );
+  }
+}

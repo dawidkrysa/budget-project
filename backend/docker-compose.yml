@@ -43,7 +43,7 @@ services:
     stdin_open: true
     tty: true
     expose:
-      - "8000"  # Expose port 8000 for Flask
+      - "9000"  # Expose port 9000 for Flask
     environment:
       PYTHONPATH: /app
     depends_on:
