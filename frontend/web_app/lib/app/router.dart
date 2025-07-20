@@ -9,7 +9,7 @@ import './features/settings/settings_page.dart';
 import './features/accounts/accounts_page.dart';
 import './features/reports/reports_page.dart';
 import './features/login/login_page.dart';
-import 'navigation_scaffold.dart';
+import 'navigation.dart';
 
 final router = GoRouter(
   initialLocation: '/',
