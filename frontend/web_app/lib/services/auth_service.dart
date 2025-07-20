@@ -4,7 +4,7 @@ import 'package:dio/dio.dart'; // for Dio HTTP client
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart'; // for secure storage
 
-final String url = String.fromEnvironment('API_URL');
+const String url = String.fromEnvironment('API_URL');
 
 class AuthService {
   Dio _dio = Dio();

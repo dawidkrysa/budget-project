@@ -14,6 +14,10 @@ services:
     # Uncomment when needed
 #    command: >
 #      bash -c "flutter pub get &&
-#               flutter run -d web-server --web-port=8000 --web-hostname=0.0.0.0"
+#               flutter run -d web-server --web-port=8000 --web-hostname=0.0.0.0 --dart-define=API_URL=$API_URL"
     networks:
       - scoobydoo
+
+#   Run commands if you want do auto-reload
+#   docker exec -it flutter_web /bin/bash
+#   flutter pub get && flutter run -d web-server --web-port=8000 --web-hostname=0.0.0.0 --dart-define=API_URL=https://dawidkrysa-pi.duckdns.org/api/v1

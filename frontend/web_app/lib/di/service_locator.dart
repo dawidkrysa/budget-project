@@ -8,12 +8,11 @@ import '../services/auth_service.dart';
 import '../services/token_service.dart';
 
 final GetIt locator = GetIt.instance;
-final String url = String.fromEnvironment('API_URL');
+const String url = String.fromEnvironment('API_URL');
 
 void setupLocator() {
   locator.registerLazySingleton<Dio>(() {
     final dio = Dio(BaseOptions(baseUrl: url));
-// api_URL can be your servers URL e.g: 'http://localhost:7087/api/'
     dio.interceptors.add(InterceptorsWrapper(
       onRequest: (options, handler) async {
         // Add JWT token to request headers
