@@ -1,7 +1,7 @@
 // Source: https://medium.com/@areesh-ali/building-a-secure-flutter-app-with-jwt-and-apis-e22ade2b2d5f
 import 'dart:convert'; // for jsonEncode, json.decode, utf8
 import 'package:dio/dio.dart'; // for Dio HTTP client
-import 'package:flutter_dotenv/flutter_dotenv.dart';
+import 'package:jwt_decoder/jwt_decoder.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart'; // for secure storage
 
 const String url = String.fromEnvironment('API_URL');
@@ -71,6 +71,12 @@ class AuthService {
 
   Future<void> logout() async {
     await _storage.delete(key: 'jwt');
+  }
+
+  Future<bool> hasValidToken() async {
+    final token = await getToken(); // SharedPreferences, etc.
+    final isExpired = JwtDecoder.isExpired(token!);
+    return !isExpired;
   }
 
   Map<String, dynamic> parseJwt(String token) {

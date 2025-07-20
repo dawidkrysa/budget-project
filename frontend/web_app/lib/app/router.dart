@@ -16,7 +16,13 @@ final router = GoRouter(
   redirect: (context, state) {
     // Access AuthProvider without listening to changes
     final authProvider = Provider.of<AuthProvider>(context, listen: false);
+
+    // Wait for auth state to load before redirecting
+    if (authProvider.isLoading) return null;
+
     final loggedIn = authProvider.isAuthenticated;
+
+    print('Autoryzacja? $loggedIn');
 
     final loggingIn = state.matchedLocation == '/';
 
