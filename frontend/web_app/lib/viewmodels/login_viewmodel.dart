@@ -46,6 +46,7 @@ class LoginViewModel extends ChangeNotifier {
     }
   }
 
+  // Called when object is removed from the tree
   @override
   void dispose() {
     loginController.dispose();
