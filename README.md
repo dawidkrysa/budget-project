@@ -56,9 +56,8 @@ A self-hosted personal budget tracking application inspired by **YNAB**, built w
 
 [![Python][Python]][Python-url]
 [![Docker][Docker]][Docker-url]
-[![HTML][HTML]][HTML-url]
-[![CSS][CSS]][CSS-url]
-[![JavaScript][JavaScript]][JavaScript-url]
+[![Flutter][Flutter]][Flutter-url]
+[![PostgreSQL][PostgreSQL]][PostgreSQL-url]
 
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
 
@@ -66,6 +65,18 @@ A self-hosted personal budget tracking application inspired by **YNAB**, built w
 
 ```
 budget-project/                       
+├── backend/                           # Backend related filed (Flask, PostgreSQL)
+├── frontend/                          # Frontend related files (Flutter) 
+├── images/                            # Project images and assets 
+├── docker-compose.yml                 # Main docker compose configuration 
+├── .gitignore                         # Git ignore rules 
+├── LICENSE.txt                        # Project license 
+└── README.md                          # Project documentation 
+```
+
+### Backend
+```
+.                     
 ├── Python/                            # Main Python application directory 
 │   ├── app.py                         # Application entry point 
 │   ├── config.py                      # Configuration settings 
@@ -73,32 +84,31 @@ budget-project/
 │   ├── requirements.txt               # Python dependencies 
 │   ├── models/                        # Database models 
 │   │   ├── account/                   # Account-related models 
-│   │   ├── budget/                    # Budget-related models 
-│   │   ├── category/                  # Category-related models 
-│   │   ├── month/                     # Month-related models 
-│   │   ├── payee/                     # Payee-related models 
-│   │   ├── transaction/               # Transaction-related models 
-│   │   ├── user/                      # User-related models 
+│   │   ├── ...                        # Other-related models 
 │   │   ├── base.py                    # Base model definitions 
 │   ├── routes/                        # API routes and endpoints 
 │   │   ├── utils/                     # Route utilities 
 │   │   │   └── db_utils.py            # Database helper functions 
 │   │   ├── api.py                     # Main API blueprint 
 │   │   ├── health.py                  # Health check endpoints 
-│   │   ├── transactions.py            # Transaction endpoints 
-│   │   ├── payees.py                  # Payee endpoints 
-│   │   └── categories.py              # Category endpoints 
+│   │   └── ...                        # Other endpoints 
 │   ├── tests/                         # Test suite 
 │   │   └── unit/                      # Unit tests 
 │   │       └── test_views.py          # View tests 
 │   └── web/                           # Web interface components 
 ├── Postgres/                          # PostgreSQL related files 
-├── images/                            # Project images and assets 
-├── docker-compose.yml                # Docker compose configuration 
-├── .env                               # Environment variables 
-├── .gitignore                         # Git ignore rules 
-├── LICENSE.txt                        # Project license 
-└── README.md                          # Project documentation 
+├── docker-compose.yml                 # Docker compose configuration 
+└── .env                               # Environment variables 
+```
+### Frontend
+```
+.                     
+├── web_app/                           # Main Flutter application directory 
+│   ├── ...                            # Other files
+│   ├── lib/                           # Flutter app main code
+│   └── pubspec/                       # Flutter dependencies
+├── docker-compose.yml                 # Docker compose configuration 
+└── .env                               # Environment variables 
 ```
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
 
@@ -109,7 +119,9 @@ budget-project/
 
 - Docker + Docker Compose
 
-This application requires a .env file to store configuration and sensitive credentials. Create a file named .env in the root directory with the following variables:
+This application requires two .env files to store configuration and sensitive credentials. Create files named .env in the frontend and backend directory with the following variables:
+
+#### Backend
 ```sh
 # PostgreSQL configuration
 POSTGRES_USER=dkrysa
@@ -136,6 +148,11 @@ FLASK_DEBUG=1
 FLASK_APP=app.py
 FLASK_SECRET_KEY="..." # your secret key
 ```
+#### Frontend
+```sh
+# API endpoint configuration
+API_URL=https://dawidkrysa-pi.duckdns.org/api/v1
+```
 
 ### Installation
 
@@ -154,6 +171,7 @@ FLASK_SECRET_KEY="..." # your secret key
  <img src="images/nginx-proxy-manager-configuration.png" alt="Nginx Proxy Manager Configuration">
 
 PostgreSQL runs on port `5432`, initialized with schema from `init.sql`.
+Nginx Proxy Manager runs on port `81`.
 
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
 
@@ -265,11 +283,7 @@ Feel free to reach out via GitHub or LinkedIn.
 [Python-url]: https://www.python.org/
 [Docker]: https://img.shields.io/badge/docker-257bd6?style=for-the-badge&logo=docker&logoColor=white
 [Docker-url]: https://www.docker.com/
-[HTML]: https://img.shields.io/badge/html-E34F26?style=for-the-badge&logo=html5&logoColor=white
-[HTML-url]: https://www.w3.org/TR/html52/
-[CSS]: https://img.shields.io/badge/css-1572B6?style=for-the-badge&logo=css3&logoColor=white
-[CSS-url]: https://www.w3.org/Style/CSS/
-[JavaScript]: https://img.shields.io/badge/javascript-F7DF1E?style=for-the-badge&logo=javascript&logoColor=black
-
-
-[JavaScript-url]: https://tc39.es/ecma262/
+[Flutter]: https://img.shields.io/badge/flutter-02569B?style=for-the-badge&logo=flutter&logoColor=white
+[Flutter-url]: https://flutter.dev/
+[PostgreSQL]: https://img.shields.io/badge/postgresql-4169E1?style=for-the-badge&logo=postgresql&logoColor=white
+[PostgreSQL-url]: https://www.postgresql.org/
