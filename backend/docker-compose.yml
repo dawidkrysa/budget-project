@@ -48,6 +48,8 @@ services:
       PYTHONPATH: /app
     depends_on:
       - db
+      - proxy
+      - duckdns
     command: >
       /bin/sh -c "
       cd /app &&
@@ -80,13 +82,11 @@ services:
     volumes:
       - proxy-data:/data
       - proxy-letsencrypt:/etc/letsencrypt
-    depends_on:
-      - db
   
   duckdns:
     image: linuxserver/duckdns
     container_name: duckdns
-    restart: always
+    restart: unless-stopped
     environment:
       - SUBDOMAINS= ${DUCKDNS_SUBDOMAIN}
       - TOKEN= ${DUCKDNS_TOKEN}

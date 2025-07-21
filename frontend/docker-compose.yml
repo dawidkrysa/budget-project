@@ -1,6 +1,7 @@
 services:
   flutter:
     image: ghcr.io/cirruslabs/flutter:stable
+    restart: unless-stopped
     container_name: flutter_web
     working_dir: /app
     volumes:
@@ -12,12 +13,14 @@ services:
     environment:
       - API_URL=${API_URL}
     # Uncomment when needed
-#    command: >
-#      bash -c "flutter pub get &&
-#               flutter run -d web-server --web-port=8000 --web-hostname=0.0.0.0 --dart-define=API_URL=$API_URL"
+    command: >
+      bash -c "flutter pub get &&
+               flutter run -d web-server --web-port=8000 --web-hostname=0.0.0.0 --dart-define=API_URL=$API_URL"
     networks:
       - scoobydoo
+    depends_on:
+      - python
 
-#   Run commands if you want do auto-reload
-#   docker exec -it flutter_web /bin/bash
-#   flutter pub get && flutter run -d web-server --web-port=8000 --web-hostname=0.0.0.0 --dart-define=API_URL=https://dawidkrysa-pi.duckdns.org/api/v1
+#   Run commands if you want to auto-reload
+#   docker-compose run --service-ports flutter
+#   It runs flutter in interactive mode. Other services are running in background
