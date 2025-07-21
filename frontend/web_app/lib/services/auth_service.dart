@@ -1,14 +1,14 @@
 // Source: https://medium.com/@areesh-ali/building-a-secure-flutter-app-with-jwt-and-apis-e22ade2b2d5f
 import 'dart:convert'; // for jsonEncode, json.decode, utf8
 import 'package:dio/dio.dart'; // for Dio HTTP client
+import 'package:flutter/foundation.dart';
 import 'package:jwt_decoder/jwt_decoder.dart';
 import 'package:universal_html/html.dart' as html;
-import 'token_service.dart';
 
 const String url = String.fromEnvironment('API_URL');
 
 class AuthService {
-  Dio _dio = Dio();
+  final Dio _dio;
   AuthService(this._dio);
 
   Future<bool> login(String login, String password) async {
@@ -23,18 +23,21 @@ class AuthService {
 
       if (response.statusCode == 200) {
         final cookies = html.document.cookie?.split('; ') ?? [];
-        print(html.document.cookie);
         for (var cookie in cookies) {
           if (cookie.startsWith('access_token=')) {
             final token = cookie.substring('access_token='.length);
-            print('Token from cookie: $token');
+            if (kDebugMode) {
+              print('Token from cookie: $token');
+            }
             return true;
           }
         }
         return false;
     }
     } catch (e) {
-      print('Login error: $e');
+      if (kDebugMode) {
+        print('Login error: $e');
+      }
     }
     return false;
   }
@@ -60,20 +63,26 @@ class AuthService {
         for (var cookie in cookies) {
           if (cookie.startsWith('access_token=')) {
             final token = cookie.substring('access_token='.length);
-            print('Token from cookie: $token');
+            if (kDebugMode) {
+              print('Token from cookie: $token');
+            }
             return true;
           }
         }
         return false;
     }
     } catch (e) {
-      print('Signup error: $e');
+      if (kDebugMode) {
+        print('Signup error: $e');
+      }
     }
     return false;
   }
 
     Future<void> logout() async {
-      print('Logged out and token deleted');
+      if (kDebugMode) {
+        print('Logged out and token deleted');
+      }
     }
 
   Future<bool> hasValidToken() async {
@@ -83,7 +92,6 @@ class AuthService {
             final token = cookie.substring('access_token='.length);
             final isExpired = JwtDecoder.isExpired(token);
             return !isExpired;
-            print('Token from cookie: $token');
           }
         }
     return false;

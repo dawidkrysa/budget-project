@@ -5,7 +5,6 @@ import 'package:web_app/provider/auth_provider.dart';
 import 'package:web_app/services/auth_service.dart';
 import 'package:web_app/viewmodels/login_viewmodel.dart';
 import 'app/home_app.dart';
-import 'package:flutter_dotenv/flutter_dotenv.dart';
 
 // Start app
 void main() async {

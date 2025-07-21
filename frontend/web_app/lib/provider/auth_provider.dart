@@ -1,5 +1,5 @@
 // Source: https://medium.com/@areesh-ali/building-a-secure-flutter-app-with-jwt-and-apis-e22ade2b2d5f
-import 'package:flutter/cupertino.dart';
+import 'package:flutter/foundation.dart';
 import '../services/auth_service.dart';
 
 class AuthProvider with ChangeNotifier {
@@ -22,10 +22,11 @@ class AuthProvider with ChangeNotifier {
 
   Future<bool> login(String login, String password) async {
     var success = await _authService.login(login, password);
-    print('Login $success');
+    if (kDebugMode) {
+      print('Login $success');
+    }
     if (success) {
       _isAuthenticated = true;
-      // await _updateUser();
       notifyListeners();
     }
     return success;
@@ -33,10 +34,11 @@ class AuthProvider with ChangeNotifier {
 
   Future<bool> signup(String name, String email, String login, String password) async {
     bool success = await _authService.signup(name, email, login, password);
-    print('Signup $success');
+    if (kDebugMode) {
+      print('Signup $success');
+    }
     if (success) {
       _isAuthenticated = true;
-      // await _updateUser();
       notifyListeners();
     }
     return success;
@@ -45,7 +47,6 @@ class AuthProvider with ChangeNotifier {
   Future<void> logout() async {
     await _authService.logout();
     _isAuthenticated = false;
-    // _user = null;
     notifyListeners();
   }
 
