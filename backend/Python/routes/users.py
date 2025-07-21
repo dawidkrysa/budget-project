@@ -1,4 +1,6 @@
 #!/usr/bin/env python3
+import sys
+
 from flask import jsonify, request, redirect, url_for, make_response, Blueprint
 from extensions import db
 from models import User
@@ -48,16 +50,17 @@ def register():
         success, error_response, status_code = commit_session()
 
         if success:
-            return redirect(url_for('auth.login'))
+            return login(user_login, password)
         return error_response, status_code
 
     return jsonify({'message': 'Register successful'}), 200
 
-@user_bp.route('/login', methods=['GET', 'POST'])
-def login():
+@user_bp.route('/login', methods=['POST','GET'])
+def login(in_login=None,in_password=None):
     if request.method == 'POST':
-        user_login = request.form['login']
-        password = request.form['password']
+        user_login = request.form['login'] if in_login is None else in_login
+        password = request.form['password'] if in_password is None else in_password
+        print(user_login,password,file=sys.stderr)
         user = User.query.filter_by(login=user_login).first()
 
         if not user or not check_password_hash(user.password, password):
