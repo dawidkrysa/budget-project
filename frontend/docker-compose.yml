@@ -13,9 +13,9 @@ services:
     environment:
       - API_URL=${API_URL}
     # Uncomment when needed
-#    command: >
-#      bash -c "flutter pub get &&
-#               flutter run -d web-server --web-port=8000 --web-hostname=0.0.0.0 --dart-define=API_URL=$API_URL"
+    command: >
+      bash -c "flutter pub get &&
+               flutter run -d web-server --web-port=8000 --web-hostname=0.0.0.0 --dart-define=API_URL=$API_URL"
     networks:
       - scoobydoo
     depends_on:
