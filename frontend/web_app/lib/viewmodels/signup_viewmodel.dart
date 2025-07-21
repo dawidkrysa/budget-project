@@ -1,12 +1,12 @@
-// Source: https://medium.com/@areesh-ali/building-a-secure-flutter-app-with-jwt-and-apis-e22ade2b2d5f
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
-
 import '../app/router.dart';
 import '../provider/auth_provider.dart';
 
-class LoginViewModel extends ChangeNotifier {
+class SignupViewModel extends ChangeNotifier {
+  final TextEditingController nameController = TextEditingController();
+  final TextEditingController emailController = TextEditingController();
   final TextEditingController loginController = TextEditingController();
   final TextEditingController passwordController = TextEditingController();
 
@@ -19,22 +19,35 @@ class LoginViewModel extends ChangeNotifier {
     notifyListeners();
   }
 
-  Future<void> login(BuildContext context) async {
+  Future<void> signup(BuildContext context) async {
     final authProvider = Provider.of<AuthProvider>(context, listen: false);
 
     final login = loginController.text.trim();
+    final name = nameController.text.trim();
+    final email = emailController.text.trim();
     final password = passwordController.text.trim();
 
-    if (login.isEmpty || password.isEmpty) {
+    if (login.isEmpty || password.isEmpty || name.isEmpty || email.isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text('Please fill all fields')),
       );
       return;
     }
 
+    final bool emailValid =
+    RegExp(r"^[a-zA-Z0-9.a-zA-Z0-9.!#$%&'*+-/=?^_`{|}~]+@[a-zA-Z0-9]+\.[a-zA-Z]+")
+      .hasMatch(email);
+
+    if (!emailValid) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Invalid email address')),
+      );
+      return;
+    }
+
     setLoading(true);
 
-    final success = await authProvider.login(login, password);
+    final success = await authProvider.signup(name, email, login, password);
     setLoading(false);
 
     if (!context.mounted) return;
@@ -43,7 +56,7 @@ class LoginViewModel extends ChangeNotifier {
       context.go(AppRoutes.budget);
     } else {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Login failed! Please try again.')),
+        const SnackBar(content: Text('Sign up failed! Please try again.')),
       );
     }
   }
@@ -53,6 +66,8 @@ class LoginViewModel extends ChangeNotifier {
   void dispose() {
     loginController.dispose();
     passwordController.dispose();
+    nameController.dispose();
+    emailController.dispose();
     super.dispose();
   }
 }

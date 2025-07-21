@@ -11,7 +11,7 @@ class NavigationScaffold extends StatelessWidget  {
   @override
   Widget build(BuildContext context) {
     final location = GoRouterState.of(context).uri.toString();
-    int selectedIndex = AppRoutes.routes.indexOf(location);
+    int selectedIndex = AppRoutes.shellRoutes.indexOf(location);
 
     final destinations = _buildDestinations();
 
@@ -19,7 +19,7 @@ class NavigationScaffold extends StatelessWidget  {
       selectedIndex: selectedIndex,
       onDestinationSelected: (index) {
         Navigator.of(context).maybePop(); // Closes drawer if open
-        context.go(AppRoutes.routes[index]);
+        context.go(AppRoutes.shellRoutes[index]);
       },
       labelType: NavigationRailLabelType.all,
       leading: const SizedBox(height: 16),

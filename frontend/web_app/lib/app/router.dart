@@ -6,21 +6,29 @@ import './features/settings/settings_page.dart';
 import './features/accounts/accounts_page.dart';
 import './features/reports/reports_page.dart';
 import './features/login/login_page.dart';
+import './features/signup/signup_page.dart';
 import 'navigation.dart';
 
 
 GoRouter createRouter(AuthProvider authProvider) {
   return GoRouter(
-    initialLocation: '/',
+    initialLocation: AppRoutes.login,
     refreshListenable: authProvider,
     redirect: (context, state) {
       final loggedIn = authProvider.isAuthenticated;
 
       // If not logged in and trying to access anything other than login, redirect to login
-      if (!loggedIn && state.matchedLocation != '/') return '/';
+      if (!loggedIn && state.matchedLocation != AppRoutes.login) {
+        switch(state.matchedLocation){
+          case AppRoutes.signup:
+            return AppRoutes.signup;
+          default:
+            return AppRoutes.login;
+        }
+      }
 
       // If logged in and trying to go to login page, redirect to first protected page
-      if (loggedIn && state.matchedLocation == '/') return AppRoutes.routes[0];
+      if (loggedIn && state.matchedLocation == AppRoutes.login) return AppRoutes.budget;
 
       // Otherwise no redirect
       return null;
@@ -28,8 +36,12 @@ GoRouter createRouter(AuthProvider authProvider) {
     routes: [
       // LOGIN route (no navigation shell)
       GoRoute(
-        path: '/',
+        path: AppRoutes.login,
         builder: (context, state) => const LoginPage(),
+      ),
+      GoRoute(
+        path: AppRoutes.signup,
+        builder: (context, state) => const SignupPage(),
       ),
       ShellRoute(
         builder: (context, state, child) {
@@ -37,23 +49,23 @@ GoRouter createRouter(AuthProvider authProvider) {
         },
         routes: [
           GoRoute(
-            path: AppRoutes.routes[0],
+            path: AppRoutes.budget,
             builder: (context, state) => const BudgetPage(),
           ),
           GoRoute(
-            path: AppRoutes.routes[1],
+            path: AppRoutes.transactions,
             builder: (context, state) => const TransactionsPage(),
           ),
           GoRoute(
-            path: AppRoutes.routes[2],
+            path: AppRoutes.accounts,
             builder: (context, state) => const AccountsPage(),
           ),
           GoRoute(
-            path: AppRoutes.routes[3],
+            path: AppRoutes.reports,
             builder: (context, state) => const ReportsPage(),
           ),
           GoRoute(
-            path: AppRoutes.routes[4],
+            path: AppRoutes.settings,
             builder: (context, state) => const SettingsPage(),
           ),
         ],
@@ -63,12 +75,20 @@ GoRouter createRouter(AuthProvider authProvider) {
 }
 
 class AppRoutes {
-  // Getting access without creating an instance, immutable
-  static const List<String> routes = [
-    '/budget',
-    '/transactions',
-    '/accounts',
-    '/reports',
-    '/settings'
+   // Getting access without creating an instance, immutable
+  static const String budget = '/budget';
+  static const String transactions = '/transactions';
+  static const String accounts = '/accounts';
+  static const String reports = '/reports';
+  static const String settings = '/settings';
+  static const String signup = '/signup';
+  static const String login = '/';
+
+  static const List<String> shellRoutes = [
+    budget,
+    transactions,
+    accounts,
+    reports,
+    settings,
   ];
 }

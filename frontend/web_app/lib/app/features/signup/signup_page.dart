@@ -1,21 +1,18 @@
 import 'package:flutter/material.dart';
-import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
+import '../../../viewmodels/signup_viewmodel.dart';
 
-import '../../../viewmodels/login_viewmodel.dart';
-import '../../router.dart';
-
-class LoginPage extends StatefulWidget {
-  const LoginPage({super.key});
+class SignupPage extends StatefulWidget {
+  const SignupPage({super.key});
 
   @override
-  LoginPageState createState() => LoginPageState();
+  SignupPageState createState() => SignupPageState();
 }
 
-class LoginPageState extends State<LoginPage> {
+class SignupPageState extends State<SignupPage> {
   @override
   Widget build(BuildContext context) {
-    final loginViewModel = Provider.of<LoginViewModel>(context);
+    final signupViewModel = Provider.of<SignupViewModel>(context);
 
     final screenWidth = MediaQuery.of(context).size.width;
 
@@ -38,16 +35,9 @@ class LoginPageState extends State<LoginPage> {
             mainAxisAlignment: MainAxisAlignment.center,
             crossAxisAlignment: CrossAxisAlignment.center,
             children: [
-              // Image.network(
-              // 'house_favicon.png',
-              // width: 256,
-              // height: 256,
-              // errorBuilder: (context, error, stackTrace) =>
-              //     const Text('Image not found'),
-              // ),
               SizedBox(height: 52),
               Text(
-                'Welcome',
+                'Nice to meet you!',
                 style: TextStyle(
                   fontFamily: 'Poppins',
                   fontWeight: FontWeight.bold,
@@ -57,7 +47,7 @@ class LoginPageState extends State<LoginPage> {
               ),
               SizedBox(height: 6),
               Text(
-                'Sign In to continue',
+                'Sign Up to continue',
                 style: TextStyle(
                   fontFamily: 'Poppins',
                   fontWeight: FontWeight.normal,
@@ -69,7 +59,29 @@ class LoginPageState extends State<LoginPage> {
               SizedBox(
               width: inputWidth,
               child: TextField(
-                controller: loginViewModel.loginController,
+                controller: signupViewModel.nameController,
+                decoration: InputDecoration(
+                  labelText: 'Name',
+                  border: OutlineInputBorder(),
+                ),
+                ),
+              ),
+              SizedBox(height: 16),
+              SizedBox(
+              width: inputWidth,
+              child: TextField(
+                controller: signupViewModel.emailController,
+                decoration: InputDecoration(
+                  labelText: 'Email',
+                  border: OutlineInputBorder(),
+                ),
+                ),
+              ),
+              SizedBox(height: 16),
+              SizedBox(
+              width: inputWidth,
+              child: TextField(
+                controller: signupViewModel.loginController,
                 decoration: InputDecoration(
                   labelText: 'Username',
                   border: OutlineInputBorder(),
@@ -80,7 +92,7 @@ class LoginPageState extends State<LoginPage> {
               SizedBox(
               width: inputWidth,
               child: TextField(
-                controller: loginViewModel.passwordController,
+                controller: signupViewModel.passwordController,
                 obscureText: true,
                 decoration: InputDecoration(
                   labelText: 'Password',
@@ -92,11 +104,11 @@ class LoginPageState extends State<LoginPage> {
               SizedBox(
                 width: inputWidth,
                 height: 49,
-                child: loginViewModel.isLoading
+                child: signupViewModel.isLoading
                     ? const Center(child: CircularProgressIndicator())
                     : ElevatedButton(
                         onPressed: () {
-                          loginViewModel.login(context);
+                          signupViewModel.signup(context);
                         },
                         style: ElevatedButton.styleFrom(
                           backgroundColor: Colors.blue.shade900,
@@ -105,7 +117,7 @@ class LoginPageState extends State<LoginPage> {
                           ),
                         ),
                         child: Text(
-                          'Login',
+                          'Sign Up',
                           style: TextStyle(
                             color: Colors.white,
                             fontSize: 16,
@@ -113,31 +125,6 @@ class LoginPageState extends State<LoginPage> {
                           ),
                         ),
                       ),
-              ),
-              SizedBox(height: 26),
-              Center(
-                child: Text(
-                  'Forgot Password?',
-                  textAlign: TextAlign.center,
-                  style: TextStyle(fontSize: 14, color: Color(0xFF87879D)),
-                ),
-              ),
-              SizedBox(height: 10),
-              Center(
-                child: TextButton(
-                  onPressed: () {
-                    context.go(AppRoutes.signup);
-                  },
-                  child: Text(
-                    "Don't have an account? Sign Up",
-                    textAlign: TextAlign.center,
-                    style: TextStyle(
-                      fontFamily: 'Poppins',
-                      fontSize: 14,
-                      color: Color(0xFF87879D),
-                    ),
-                  ),
-                )
               ),
             ],
           ),
