@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import '../../../utils/screen_utils.dart';
 import '../../../viewmodels/signup_viewmodel.dart';
 
 class SignupPage extends StatefulWidget {
@@ -13,19 +14,8 @@ class SignupPageState extends State<SignupPage> {
   @override
   Widget build(BuildContext context) {
     final signupViewModel = Provider.of<SignupViewModel>(context);
+    final inputWidth = LayoutUtils.getResponsiveInputWidth(context);
 
-    final screenWidth = MediaQuery.of(context).size.width;
-
-    // Use 50% width on desktop/tablet, 100% width on mobile
-    double inputWidth;
-
-    if (screenWidth > 600) {
-    // 50% width of the screen on desktop/tablet
-    inputWidth = screenWidth * 0.2;
-    } else {
-      // 100% width on mobile
-      inputWidth = screenWidth - 60; // subtract padding (30 + 30)
-    }
 
     return Scaffold(
       body: Center(

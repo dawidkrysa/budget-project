@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
+import 'package:provider/provider.dart';
 import 'package:web_app/app/router.dart';
+import 'package:web_app/viewmodels/logout_viewmodel.dart';
 
 // Widget can be built and might change during the lifetime
 class NavigationScaffold extends StatelessWidget  {
@@ -19,6 +21,11 @@ class NavigationScaffold extends StatelessWidget  {
       selectedIndex: selectedIndex,
       onDestinationSelected: (index) {
         Navigator.of(context).maybePop(); // Closes drawer if open
+        if(index == AppRoutes.shellRoutes.indexOf(AppRoutes.logout)){
+          final logoutViewModel = Provider.of<LogoutViewModel>(context, listen: false);
+          logoutViewModel.logout(context);
+          return;
+        }
         context.go(AppRoutes.shellRoutes[index]);
       },
       labelType: NavigationRailLabelType.all,
@@ -90,6 +97,12 @@ List<NavigationRailDestination> _buildDestinations() => const [
           icon: Icon(Icons.settings_outlined),
           selectedIcon: Icon(Icons.settings),
           label: Text('Settings'),
+        ),
+        NavigationRailDestination(
+          padding: EdgeInsets.all(16.0),
+          icon: Icon(Icons.logout_outlined),
+          selectedIcon: Icon(Icons.logout),
+          label: Text('Logout'),
         ),
       ];
 

@@ -4,6 +4,7 @@ import 'package:provider/provider.dart';
 import 'package:web_app/provider/auth_provider.dart';
 import 'package:web_app/services/auth_service.dart';
 import 'package:web_app/viewmodels/login_viewmodel.dart';
+import 'package:web_app/viewmodels/logout_viewmodel.dart';
 import 'package:web_app/viewmodels/signup_viewmodel.dart';
 import 'app/home_app.dart';
 
@@ -15,6 +16,7 @@ void main() async {
         ChangeNotifierProvider(create: (_) => AuthProvider(AuthService(Dio()))),
         ChangeNotifierProvider(create: (_) => LoginViewModel()),
         ChangeNotifierProvider(create: (_) => SignupViewModel()),
+        ChangeNotifierProvider(create: (_) => LogoutViewModel()),
         // other providers...
       ],
       child: const MainApp(),

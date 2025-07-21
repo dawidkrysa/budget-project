@@ -1,9 +1,9 @@
 // Source: https://medium.com/@areesh-ali/building-a-secure-flutter-app-with-jwt-and-apis-e22ade2b2d5f
 import 'dart:convert'; // for jsonEncode, json.decode, utf8
 import 'package:dio/dio.dart'; // for Dio HTTP client
-import 'package:flutter/foundation.dart';
 import 'package:jwt_decoder/jwt_decoder.dart';
 import 'package:universal_html/html.dart' as html;
+import 'package:web_app/utils/debug_utils.dart';
 
 const String url = String.fromEnvironment('API_URL');
 
@@ -26,18 +26,14 @@ class AuthService {
         for (var cookie in cookies) {
           if (cookie.startsWith('access_token=')) {
             final token = cookie.substring('access_token='.length);
-            if (kDebugMode) {
-              print('Token from cookie: $token');
-            }
+            DebugUtils.log('Token from cookie: $token');
             return true;
           }
         }
         return false;
     }
     } catch (e) {
-      if (kDebugMode) {
-        print('Login error: $e');
-      }
+        DebugUtils.log('Login error: $e');
     }
     return false;
   }
@@ -63,26 +59,21 @@ class AuthService {
         for (var cookie in cookies) {
           if (cookie.startsWith('access_token=')) {
             final token = cookie.substring('access_token='.length);
-            if (kDebugMode) {
-              print('Token from cookie: $token');
-            }
+            DebugUtils.log('Token from cookie: $token');
             return true;
           }
         }
         return false;
     }
     } catch (e) {
-      if (kDebugMode) {
-        print('Signup error: $e');
-      }
+        DebugUtils.log('Signup error: $e');
     }
     return false;
   }
 
     Future<void> logout() async {
-      if (kDebugMode) {
-        print('Logged out and token deleted');
-      }
+      html.document.cookie = "access_token=; expires=Thu, 01 Jan 1970 00:00:00 GMT; path=/";
+      DebugUtils.log('Logged out and token deleted');
     }
 
   Future<bool> hasValidToken() async {

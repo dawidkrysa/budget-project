@@ -83,6 +83,7 @@ class AppRoutes {
   static const String settings = '/settings';
   static const String signup = '/signup';
   static const String login = '/';
+  static const String logout = '/';
 
   static const List<String> shellRoutes = [
     budget,
@@ -90,5 +91,6 @@ class AppRoutes {
     accounts,
     reports,
     settings,
+    logout
   ];
 }

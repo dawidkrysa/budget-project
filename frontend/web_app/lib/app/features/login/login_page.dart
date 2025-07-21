@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
 
+import '../../../utils/screen_utils.dart';
 import '../../../viewmodels/login_viewmodel.dart';
 import '../../router.dart';
 
@@ -17,18 +18,7 @@ class LoginPageState extends State<LoginPage> {
   Widget build(BuildContext context) {
     final loginViewModel = Provider.of<LoginViewModel>(context);
 
-    final screenWidth = MediaQuery.of(context).size.width;
-
-    // Use 50% width on desktop/tablet, 100% width on mobile
-    double inputWidth;
-
-    if (screenWidth > 600) {
-    // 50% width of the screen on desktop/tablet
-    inputWidth = screenWidth * 0.2;
-    } else {
-      // 100% width on mobile
-      inputWidth = screenWidth - 60; // subtract padding (30 + 30)
-    }
+    final inputWidth = LayoutUtils.getResponsiveInputWidth(context);
 
     return Scaffold(
       body: Center(
@@ -67,25 +57,25 @@ class LoginPageState extends State<LoginPage> {
               ),
               SizedBox(height: 26),
               SizedBox(
-              width: inputWidth,
-              child: TextField(
-                controller: loginViewModel.loginController,
-                decoration: InputDecoration(
-                  labelText: 'Username',
-                  border: OutlineInputBorder(),
-                ),
+                width: inputWidth,
+                child: TextField(
+                  controller: loginViewModel.loginController,
+                  decoration: InputDecoration(
+                    labelText: 'Username',
+                    border: OutlineInputBorder(),
+                  ),
                 ),
               ),
               SizedBox(height: 16),
               SizedBox(
-              width: inputWidth,
-              child: TextField(
-                controller: loginViewModel.passwordController,
-                obscureText: true,
-                decoration: InputDecoration(
-                  labelText: 'Password',
-                  border: OutlineInputBorder(),
-                ),
+                width: inputWidth,
+                child: TextField(
+                  controller: loginViewModel.passwordController,
+                  obscureText: true,
+                  decoration: InputDecoration(
+                    labelText: 'Password',
+                    border: OutlineInputBorder(),
+                  ),
                 ),
               ),
               const SizedBox(height: 26),
@@ -137,7 +127,7 @@ class LoginPageState extends State<LoginPage> {
                       color: Color(0xFF87879D),
                     ),
                   ),
-                )
+                ),
               ),
             ],
           ),
