@@ -22,7 +22,7 @@ class AuthProvider with ChangeNotifier {
 
   Future<bool> login(String login, String password) async {
     var success = await _authService.login(login, password);
-    print(success);
+    print('Login $success');
     if (success) {
       _isAuthenticated = true;
       // await _updateUser();
@@ -33,7 +33,7 @@ class AuthProvider with ChangeNotifier {
 
   Future<bool> signup(String name, String email, String login, String password) async {
     bool success = await _authService.signup(name, email, login, password);
-    print(success);
+    print('Signup $success');
     if (success) {
       _isAuthenticated = true;
       // await _updateUser();

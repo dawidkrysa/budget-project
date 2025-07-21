@@ -15,6 +15,19 @@ class _LoginPageState extends State<LoginPage> {
   Widget build(BuildContext context) {
     final loginViewModel = Provider.of<LoginViewModel>(context);
 
+    final screenWidth = MediaQuery.of(context).size.width;
+
+    // Use 50% width on desktop/tablet, 100% width on mobile
+    double inputWidth;
+
+    if (screenWidth > 600) {
+    // 50% width of the screen on desktop/tablet
+    inputWidth = screenWidth * 0.2;
+    } else {
+      // 100% width on mobile
+      inputWidth = screenWidth - 60; // subtract padding (30 + 30)
+    }
+
     return Scaffold(
       body: Center(
         child: Padding(
@@ -23,6 +36,14 @@ class _LoginPageState extends State<LoginPage> {
             mainAxisAlignment: MainAxisAlignment.center,
             crossAxisAlignment: CrossAxisAlignment.center,
             children: [
+              // Image.network(
+              // 'house_favicon.png',
+              // width: 256,
+              // height: 256,
+              // errorBuilder: (context, error, stackTrace) =>
+              //     const Text('Image not found'),
+              // ),
+              SizedBox(height: 52),
               Text(
                 'Welcome',
                 style: TextStyle(
@@ -43,25 +64,31 @@ class _LoginPageState extends State<LoginPage> {
                 ),
               ),
               SizedBox(height: 26),
-              TextField(
+              SizedBox(
+              width: inputWidth,
+              child: TextField(
                 controller: loginViewModel.loginController,
                 decoration: InputDecoration(
                   labelText: 'Username',
                   border: OutlineInputBorder(),
                 ),
+                ),
               ),
               SizedBox(height: 16),
-              TextField(
+              SizedBox(
+              width: inputWidth,
+              child: TextField(
                 controller: loginViewModel.passwordController,
                 obscureText: true,
                 decoration: InputDecoration(
                   labelText: 'Password',
                   border: OutlineInputBorder(),
                 ),
+                ),
               ),
               const SizedBox(height: 26),
               SizedBox(
-                width: double.infinity,
+                width: inputWidth,
                 height: 49,
                 child: loginViewModel.isLoading
                     ? const Center(child: CircularProgressIndicator())

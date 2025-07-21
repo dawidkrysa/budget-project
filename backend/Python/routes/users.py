@@ -66,7 +66,11 @@ def login():
         token = jwt.encode({'user_id': str(user.id), 'exp': datetime.now(timezone.utc) + timedelta(hours=1)},
                            Config.SECRET_KEY, algorithm="HS256")
 
-        return jsonify({'token': token})
+        response = jsonify({'status': 'ok', 'message': 'Login successful'})
+        response.set_cookie('access_token', token, httponly=False, samesite='strict', secure=True,
+                            expires=datetime.now(timezone.utc) + timedelta(hours=1))
+
+        return response
 
     return jsonify({'message': 'Send a POST request to login'}), 200
 

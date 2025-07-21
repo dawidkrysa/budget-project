@@ -2,14 +2,13 @@
 import 'dart:convert'; // for jsonEncode, json.decode, utf8
 import 'package:dio/dio.dart'; // for Dio HTTP client
 import 'package:jwt_decoder/jwt_decoder.dart';
-import 'package:flutter_secure_storage/flutter_secure_storage.dart'; // for secure storage
+import 'package:universal_html/html.dart' as html;
+import 'token_service.dart';
 
 const String url = String.fromEnvironment('API_URL');
 
 class AuthService {
   Dio _dio = Dio();
-  final FlutterSecureStorage _storage = FlutterSecureStorage();
-
   AuthService(this._dio);
 
   Future<bool> login(String login, String password) async {
@@ -23,13 +22,17 @@ class AuthService {
       );
 
       if (response.statusCode == 200) {
-        final token = response.data['token'];
-        print(response.data);
-        if (token != null) {
-          await _storage.write(key: 'jwt', value: token);
-          return true;
+        final cookies = html.document.cookie?.split('; ') ?? [];
+        print(html.document.cookie);
+        for (var cookie in cookies) {
+          if (cookie.startsWith('access_token=')) {
+            final token = cookie.substring('access_token='.length);
+            print('Token from cookie: $token');
+            return true;
+          }
         }
-      }
+        return false;
+    }
     } catch (e) {
       print('Login error: $e');
     }
@@ -44,7 +47,7 @@ class AuthService {
           data: {
             'name': name,
             'email': email,
-            'confirmPassword': login,
+            'login': login,
             'password': password,
           },
           options: Options(
@@ -53,30 +56,37 @@ class AuthService {
       );
 
       if (response.statusCode == 200) {
-        final token = response.data; // Ensure this matches your API response
-        if (token != null) {
-          await _storage.write(key: 'jwt', value: token);
-          return true;
+        final cookies = html.document.cookie?.split('; ') ?? [];
+        for (var cookie in cookies) {
+          if (cookie.startsWith('access_token=')) {
+            final token = cookie.substring('access_token='.length);
+            print('Token from cookie: $token');
+            return true;
+          }
         }
-      }
+        return false;
+    }
     } catch (e) {
       print('Signup error: $e');
     }
     return false;
   }
 
-  Future<String?> getToken() async {
-    return await _storage.read(key: 'jwt');
-  }
-
-  Future<void> logout() async {
-    await _storage.delete(key: 'jwt');
-  }
+    Future<void> logout() async {
+      print('Logged out and token deleted');
+    }
 
   Future<bool> hasValidToken() async {
-    final token = await getToken(); // SharedPreferences, etc.
-    final isExpired = JwtDecoder.isExpired(token!);
-    return !isExpired;
+    final cookies = html.document.cookie?.split('; ') ?? [];
+        for (var cookie in cookies) {
+          if (cookie.startsWith('access_token=')) {
+            final token = cookie.substring('access_token='.length);
+            final isExpired = JwtDecoder.isExpired(token);
+            return !isExpired;
+            print('Token from cookie: $token');
+          }
+        }
+    return false;
   }
 
   Map<String, dynamic> parseJwt(String token) {

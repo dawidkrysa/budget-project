@@ -42,6 +42,9 @@ dependencies:
   jwt_decode: ^0.3.1
   flutter_dotenv: ^5.2.1
   jwt_decoder: ^2.0.1
+  dio_cookie_manager: ^3.2.0
+  cookie_jar: ^4.0.8
+  universal_html: ^2.2.4
 
 dev_dependencies:
   flutter_test:

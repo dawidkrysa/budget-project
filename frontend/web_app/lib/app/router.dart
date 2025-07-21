@@ -22,15 +22,14 @@ final router = GoRouter(
 
     final loggedIn = authProvider.isAuthenticated;
 
-    print('Autoryzacja? $loggedIn');
-
-    final loggingIn = state.matchedLocation == '/';
+    print('Zalogowany $loggedIn');
+    print('Lokalizacja ${state.matchedLocation}');
 
     // If not logged in and trying to access anything other than login, redirect to login
-    if (!loggedIn && !loggingIn) return '/';
+    if (!loggedIn && state.matchedLocation != '/') return '/';
 
     // If logged in and trying to go to login page, redirect to first protected page
-    if (loggedIn && loggingIn) return AppRoutes.routes[0];
+    if (loggedIn && state.matchedLocation == '/') return AppRoutes.routes[0];
 
     // Otherwise no redirect
     return null;
