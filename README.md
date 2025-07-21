@@ -160,9 +160,9 @@ API_URL=https://dawidkrysa-pi.duckdns.org/api/v1
    ```sh
    git clone https://github.com/dawidkrysa/budget-project.git
    ```
-2. Run Docker Compose with interactive mode
+2. Run Docker Compose
    ```sh
-   docker-compose run --service-ports flutter
+   docker compose up -d
    ```
 3. Configure [DuckDNS](https://www.duckdns.org/)
 
