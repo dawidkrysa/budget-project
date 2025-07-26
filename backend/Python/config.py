@@ -7,3 +7,17 @@ class Config:
     SQLALCHEMY_TRACK_MODIFICATIONS = False
     DEBUG = os.environ.get("FLASK_DEBUG", False)
     JWT_SECRET_KEY = os.environ.get("JWT_SECRET_KEY", "jwt_secret")
+    SWAGGER = {
+        "specs_route": "/api/v1/docs/",
+        'title': 'Home budget project API',
+        'description': "Project documentation API",
+        'swagger': '2.0',
+        "specs": [
+            {
+                "endpoint": 'apispec_1',
+                "route": '/api/v1/docs/apispec_1.json',
+                "rule_filter": lambda rule: True,  # include all endpoints
+                "model_filter": lambda tag: True,  # include all models
+            }
+        ]
+    }

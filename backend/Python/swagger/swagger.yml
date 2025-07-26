@@ -1,0 +1,620 @@
+swagger: "2.0"
+info:
+  title: "Budget API"
+  version: "1.0.0"
+  description: "Personal home budget API"
+
+basePath: "/api/v1"
+consumes:
+  - "application/json"
+produces:
+  - "application/json"
+security:
+  - BearerAuth: []
+
+securityDefinitions:
+  BearerAuth:
+    type: "apiKey"
+    name: "Authorization"
+    in: "header"
+    description: "JWT Authorization header using the Bearer scheme. Example: 'Authorization: Bearer {token}'"
+
+parameters:
+  budget_id:
+    name: "budget_id"
+    in: "path"
+    required: true
+    type: "string"
+    description: "Unique identifier of the budget."
+
+paths:
+  /signup:
+    post:
+      security: []
+      tags:
+        - "Authorization"
+      summary: "Register a new user"
+      parameters:
+        - name: "body"
+          in: "body"
+          required: true
+          schema:
+            type: "object"
+            required:
+              - login
+              - name
+              - email
+              - password
+            properties:
+              login:
+                type: "string"
+              name:
+                type: "string"
+              email:
+                type: "string"
+              password:
+                type: "string"
+      responses:
+        200:
+          description: "User registered"
+          schema:
+            $ref: "#/definitions/User"
+        400:
+          description: "Validation error"
+          schema:
+            $ref: "#/definitions/Error"
+
+  /login:
+    post:
+      tags:
+        - "Authorization"
+      security: []
+      summary: "Login user and get JWT token"
+      parameters:
+        - name: "body"
+          in: "body"
+          required: true
+          schema:
+            type: "object"
+            required:
+              - login
+              - password
+            properties:
+              login:
+                type: "string"
+              password:
+                type: "string"
+      responses:
+        200:
+          description: "Login successful"
+          schema:
+            type: "object"
+            properties:
+              status:
+                type: "string"
+                example: "ok"
+              access_token:
+                type: "string"
+                example: "eyJhbGciOiJIUzI1..."
+        401:
+          description: "Invalid credentials"
+          schema:
+            $ref: "#/definitions/Error"
+
+  /budgets/{budget_id}/categories:
+    get:
+      tags:
+        - "Categories"
+      summary: "Get all categories"
+      parameters:
+        - $ref: "#/parameters/budget_id"
+        - name: "category_name"
+          in: "query"
+          type: "string"
+          required: false
+          description: "Filter categories by name."
+      responses:
+        200:
+          description: "List of categories"
+          schema:
+            type: "array"
+            items:
+              $ref: "#/definitions/Category"
+        400:
+          description: "Bad request"
+          schema:
+            $ref: "#/definitions/Error"
+
+    post:
+      tags:
+        - "Categories"
+      summary: "Create a new category"
+      parameters:
+        - $ref: "#/parameters/budget_id"
+        - name: "body"
+          in: "body"
+          required: true
+          schema:
+            type: "object"
+            properties:
+              category_name:
+                type: "string"
+              category_group_id:
+                type: "string"
+      responses:
+        200:
+          description: "Category created"
+          schema:
+            $ref: "#/definitions/Category"
+        400:
+          description: "Bad request"
+          schema:
+            $ref: "#/definitions/Error"
+
+  /budgets/{budget_id}/categories/{category_id}:
+    patch:
+      tags:
+        - "Categories"
+      summary: "Update category assigned amount"
+      parameters:
+        - $ref: "#/parameters/budget_id"
+        - name: "category_id"
+          in: "path"
+          required: true
+          type: "string"
+        - name: "body"
+          in: "body"
+          required: true
+          schema:
+            type: "object"
+            properties:
+              assigned:
+                type: "number"
+      responses:
+        200:
+          description: "Updated category"
+          schema:
+            $ref: "#/definitions/Category"
+        400:
+          description: "Invalid input"
+          schema:
+            $ref: "#/definitions/Error"
+        404:
+          description: "Category not found"
+          schema:
+            $ref: "#/definitions/Error"
+
+  /budgets/{budget_id}/payees:
+    get:
+      tags:
+        - "Payees"
+      summary: "Get all payees"
+      parameters:
+        - $ref: "#/parameters/budget_id"
+      responses:
+        200:
+          description: "List of payees"
+          schema:
+            type: "array"
+            items:
+              $ref: "#/definitions/Payee"
+
+    post:
+      tags:
+        - "Payees"
+      summary: "Create a new payee"
+      parameters:
+        - $ref: "#/parameters/budget_id"
+        - name: "body"
+          in: "body"
+          required: true
+          schema:
+            type: "object"
+            properties:
+              name:
+                type: "string"
+      responses:
+        200:
+          description: "Payee created"
+          schema:
+            $ref: "#/definitions/Payee"
+        400:
+          description: "Bad request"
+          schema:
+            $ref: "#/definitions/Error"
+        403:
+          description: "Payee name already exists"
+          schema:
+            $ref: "#/definitions/Error"
+
+  /budgets/{budget_id}/payees/{payee_id}:
+    get:
+      tags:
+        - "Payees"
+      summary: "Retrieve payee info"
+      parameters:
+        - $ref: "#/parameters/budget_id"
+        - name: "payee_id"
+          in: "path"
+          required: true
+          type: "string"
+      responses:
+        200:
+          description: "Payee data"
+          schema:
+            $ref: "#/definitions/Payee"
+        404:
+          description: "Payee not found"
+          schema:
+            $ref: "#/definitions/Error"
+
+    put:
+      tags:
+        - "Payees"
+      summary: "Update payee"
+      parameters:
+        - $ref: "#/parameters/budget_id"
+        - name: "payee_id"
+          in: "path"
+          required: true
+          type: "string"
+        - name: "body"
+          in: "body"
+          required: true
+          schema:
+            type: "object"
+            properties:
+              name:
+                type: "string"
+      responses:
+        200:
+          description: "Payee updated"
+          schema:
+            $ref: "#/definitions/Payee"
+
+    patch:
+      tags:
+        - "Payees"
+      summary: "Partially update payee"
+      parameters:
+        - $ref: "#/parameters/budget_id"
+        - name: "payee_id"
+          in: "path"
+          required: true
+          type: "string"
+        - name: "body"
+          in: "body"
+          required: true
+          schema:
+            type: "object"
+            properties:
+              name:
+                type: "string"
+      responses:
+        200:
+          description: "Payee updated"
+          schema:
+            $ref: "#/definitions/Payee"
+
+    delete:
+      tags:
+        - "Payees"
+      summary: "Delete payee"
+      parameters:
+        - $ref: "#/parameters/budget_id"
+        - name: "payee_id"
+          in: "path"
+          required: true
+          type: "string"
+      responses:
+        200:
+          description: "Payee deleted"
+          schema:
+            $ref: "#/definitions/Message"
+        404:
+          description: "Payee not found"
+          schema:
+            $ref: "#/definitions/Error"
+
+  /budgets/{budget_id}/transactions:
+    get:
+      tags:
+        - "Transactions"
+      summary: "Get all transactions"
+      parameters:
+        - $ref: "#/parameters/budget_id"
+      responses:
+        200:
+          description: "List of transactions"
+          schema:
+            type: "array"
+            items:
+              $ref: "#/definitions/Transaction"
+
+    post:
+      tags:
+        - "Transactions"
+      summary: "Add a new transaction"
+      parameters:
+        - $ref: "#/parameters/budget_id"
+        - name: "body"
+          in: "body"
+          required: true
+          schema:
+            $ref: "#/definitions/TransactionInput"
+      responses:
+        200:
+          description: "Transaction created"
+          schema:
+            $ref: "#/definitions/Transaction"
+        400:
+          description: "Bad request"
+          schema:
+            $ref: "#/definitions/Error"
+
+  /budgets/{budget_id}/transactions/{transaction_id}:
+    put:
+      tags:
+        - "Transactions"
+      summary: "Update a transaction"
+      parameters:
+        - $ref: "#/parameters/budget_id"
+        - name: "transaction_id"
+          in: "path"
+          required: true
+          type: "string"
+        - name: "body"
+          in: "body"
+          required: true
+          schema:
+            $ref: "#/definitions/TransactionInput"
+      responses:
+        200:
+          description: "Transaction updated"
+          schema:
+            $ref: "#/definitions/Message"
+        404:
+          description: "Transaction not found"
+          schema:
+            $ref: "#/definitions/Error"
+
+    delete:
+      tags:
+        - "Transactions"
+      summary: "Delete a transaction"
+      parameters:
+        - $ref: "#/parameters/budget_id"
+        - name: "transaction_id"
+          in: "path"
+          required: true
+          type: "string"
+      responses:
+        200:
+          description: "Transaction deleted"
+          schema:
+            $ref: "#/definitions/Message"
+        404:
+          description: "Transaction not found"
+          schema:
+            $ref: "#/definitions/Error"
+
+  /budgets/{budget_id}/transactions/{transaction_id}/form-data:
+    get:
+      tags:
+        - "Transactions"
+      summary: "Get transaction form data"
+      parameters:
+        - $ref: "#/parameters/budget_id"
+        - name: "transaction_id"
+          in: "path"
+          required: true
+          type: "string"
+      responses:
+        200:
+          description: "Form data for transaction"
+          schema:
+            type: "object"
+            properties:
+              date:
+                type: "string"
+              account_id:
+                type: "string"
+              payee_name:
+                type: "string"
+              category_id:
+                type: "string"
+              memo:
+                type: "string"
+              amount:
+                type: "number"
+              categories:
+                type: "array"
+                items:
+                  $ref: "#/definitions/Category"
+              payees:
+                type: "array"
+                items:
+                  $ref: "#/definitions/Payee"
+              accounts:
+                type: "array"
+                items:
+                  type: "string"
+        404:
+          description: "Transaction not found"
+          schema:
+            $ref: "#/definitions/Error"
+
+  /budgets/{budget_id}/transactions/form-data:
+    get:
+      tags:
+        - "Transactions"
+      summary: "Get data for transaction form"
+      parameters:
+        - $ref: "#/parameters/budget_id"
+      responses:
+        200:
+          description: "Form data"
+          schema:
+            type: "object"
+            properties:
+              categories:
+                type: "array"
+                items:
+                  $ref: "#/definitions/Category"
+              payees:
+                type: "array"
+                items:
+                  $ref: "#/definitions/Payee"
+              accounts:
+                type: "array"
+                items:
+                  type: "string"
+              date:
+                type: "string"
+
+  /health/status:
+    get:
+      tags:
+        - "Health"
+      summary: "Health check"
+      responses:
+        200:
+          description: "API and database status"
+          schema:
+            type: "object"
+            properties:
+              status:
+                type: "string"
+                example: "OK"
+              database:
+                type: "string"
+                example: "OK"
+
+definitions:
+  User:
+    type: object
+    properties:
+      id:
+        type: string
+        example: "user_123"
+      login:
+        type: string
+        example: "johndoe"
+      name:
+        type: string
+        example: "John Doe"
+      email:
+        type: string
+        example: "john@example.com"
+      active:
+        type: boolean
+        example: true
+
+  Category:
+    type: object
+    properties:
+      id:
+        type: string
+        example: "cat_123"
+      name:
+        type: string
+        example: "Groceries"
+      category_group_id:
+        type: string
+        example: "group_1"
+      budget_id:
+        type: string
+        example: "budget_123"
+      budgeted:
+        type: number
+        example: 150.0
+
+  Payee:
+    type: object
+    properties:
+      id:
+        type: string
+        example: "payee_123"
+      name:
+        type: string
+        example: "Amazon"
+      budget_id:
+        type: string
+        example: "budget_123"
+
+  Transaction:
+    type: object
+    properties:
+      id:
+        type: string
+        example: "txn_123"
+      date:
+        type: string
+        format: date
+        example: "2025-07-26"
+      account_id:
+        type: string
+        example: "acc_123"
+      payee_id:
+        type: string
+        example: "payee_123"
+      category_id:
+        type: string
+        example: "cat_123"
+      memo:
+        type: string
+        example: "Grocery shopping"
+      amount:
+        type: number
+        example: -50.00
+      budget_id:
+        type: string
+        example: "budget_123"
+
+  TransactionInput:
+    type: object
+    required:
+      - date
+      - account_id
+      - payee_name
+      - category_id
+      - amount
+    properties:
+      date:
+        type: string
+        example: "2025-07-26"
+      account_id:
+        type: string
+        example: "acc_123"
+      payee_name:
+        type: string
+        example: "Amazon"
+      category_id:
+        type: string
+        example: "cat_123"
+      memo:
+        type: string
+        example: "Grocery shopping"
+      amount:
+        type: number
+        example: -50.00
+
+  Message:
+    type: object
+    properties:
+      status:
+        type: string
+        example: "success"
+      message:
+        type: string
+        example: "Item deleted."
+
+  Error:
+    type: object
+    properties:
+      status:
+        type: string
+        example: "error"
+      message:
+        type: string
+        example: "An error occurred."

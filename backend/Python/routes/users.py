@@ -60,7 +60,6 @@ def login(in_login=None,in_password=None):
     if request.method == 'POST':
         user_login = request.form['login'] if in_login is None else in_login
         password = request.form['password'] if in_password is None else in_password
-        print(user_login,password,file=sys.stderr)
         user = User.query.filter_by(login=user_login).first()
 
         if not user or not check_password_hash(user.password, password):

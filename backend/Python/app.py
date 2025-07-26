@@ -4,6 +4,7 @@ from flask import Flask
 from dotenv import load_dotenv
 from extensions import db, migrate, jwt, cors
 from routes import user_bp, transaction_bp, category_bp, payee_bp, health_bp
+from flasgger import Swagger
 
 load_dotenv()
 app = Flask(__name__)
@@ -14,6 +15,8 @@ db.init_app(app)
 migrate.init_app(app, db)
 jwt.init_app(app)
 cors.init_app(app)
+# Create swagger documentation
+swagger = Swagger(app, template_file='swagger/swagger.yml')
 
 # Register blueprints
 main_prefix = '/api/v1'

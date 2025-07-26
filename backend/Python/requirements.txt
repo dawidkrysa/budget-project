@@ -1,16 +1,25 @@
 # Basic dependencies
 requests               # For making HTTP requests
 pandas                 # For handling CSV files and data processing
-psycopg2               # PostgreSQL adapter for Python (psycopg2)
 matplotlib             # For creating plots and visualizations
+psycopg2-binary
 flask
 flask_sqlalchemy
 flask_migrate
 flask_jwt_extended
 flask_cors
 cryptography           # For secure data encryption and decryption
+flask-restful
+flasgger
 
 # Additional libraries
 numpy                  # For numerical computing and handling large datasets
 python-dotenv          # For loading environment variables from a .env file
 pytest                 # Python API and web testing
+
+# Django libs
+# Django
+# djangorestframework
+# djangorestframework-simplejwt
+# django-environ
+# gunicorn
