@@ -15,16 +15,15 @@ GoRouter createRouter(AuthProvider authProvider) {
     initialLocation: AppRoutes.login,
     refreshListenable: authProvider,
     redirect: (context, state) {
+      if (authProvider.isLoading) return null;
+
       final loggedIn = authProvider.isAuthenticated;
 
       // If not logged in and trying to access anything other than login, redirect to login
-      if (!loggedIn && state.matchedLocation != AppRoutes.login) {
-        switch(state.matchedLocation){
-          case AppRoutes.signup:
-            return AppRoutes.signup;
-          default:
-            return AppRoutes.login;
-        }
+      if (!loggedIn &&
+          state.matchedLocation != AppRoutes.login &&
+          state.matchedLocation != AppRoutes.signup) {
+        return AppRoutes.login;
       }
 
       // If logged in and trying to go to login page, redirect to first protected page

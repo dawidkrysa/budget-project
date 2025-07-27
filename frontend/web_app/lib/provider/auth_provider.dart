@@ -8,13 +8,13 @@ class AuthProvider with ChangeNotifier {
   bool _isLoading = true;
 
   AuthProvider(this._authService){
-    _initializeAuth();
+    _init();
   }
 
   bool get isAuthenticated => _isAuthenticated;
   bool get isLoading => _isLoading;
 
-  Future<void> _initializeAuth() async {
+  Future<void> _init() async {
     _isAuthenticated = await _authService.hasValidToken();
     _isLoading = false;
     notifyListeners();
