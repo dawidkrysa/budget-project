@@ -152,7 +152,9 @@ def commit_session():
 def token_required(f):
     @wraps(f)
     def decorated(*args, **kwargs):
-        token = request.cookies.get('access_token')
+        headers = request.headers
+        bearer = headers.get('Authorization')  # Bearer YourTokenHere
+        token = bearer.split()[1]
 
         if not token:
             return jsonify({'message': 'Token is missing!'}), 401
