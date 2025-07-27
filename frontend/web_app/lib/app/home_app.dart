@@ -14,7 +14,9 @@ class MainApp extends StatelessWidget {
 
     return MaterialApp.router(
       title: 'Home budget',
+
       theme: ThemeData(
+        useMaterial3: true,
         colorScheme: ColorScheme.fromSeed(
           seedColor: Colors.blue.shade900,
           brightness: Brightness.light,
