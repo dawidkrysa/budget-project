@@ -1,10 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import 'package:web_app/utils/debug_utils.dart';
-
-import '../../../models/budget.dart';
 import '../../../provider/budget_provider.dart';
-import '../../../services/budget_service.dart';
 
 class BudgetPage extends StatefulWidget {
   const BudgetPage({super.key});
@@ -14,7 +10,6 @@ class BudgetPage extends StatefulWidget {
 }
 
 class _BudgetPageState extends State<BudgetPage> {
-
   late Future<void> _initFuture;
 
   @override
@@ -64,8 +59,9 @@ class _BudgetPageState extends State<BudgetPage> {
                       budget.name,
                       style: TextStyle(
                         color: isSelected ? Colors.blue : Colors.black,
-                        fontWeight:
-                            isSelected ? FontWeight.bold : FontWeight.normal,
+                        fontWeight: isSelected
+                            ? FontWeight.bold
+                            : FontWeight.normal,
                       ),
                     ),
                   ),
