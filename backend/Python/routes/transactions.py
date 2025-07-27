@@ -62,12 +62,13 @@ def update_transaction(current_user, budget_id, transaction_id):
 @token_required
 def get_transactions(current_user, budget_id):
     """
-    Retrieve all transactions.
-    Returns:
-        JSON list of all transactions as dictionaries.
+    Retrieve all transactions, optionally expanding related entities.
     """
+    expand_fields = request.args.get('expand', '')  # e.g., "account,category"
+    expand_fields = [e.strip() for e in expand_fields.split(',') if e.strip()]
+
     transactions_data = Transaction.query.filter(Transaction.budget_id == budget_id).all()
-    return jsonify([t.to_dict() for t in transactions_data])
+    return jsonify([t.to_dict(expand=expand_fields) for t in transactions_data])
 
 
 @transaction_bp.route("", methods=['POST'])
