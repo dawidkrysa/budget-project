@@ -1,4 +1,6 @@
 #!/usr/bin/env python3
+from typing import override
+
 from models.base import BaseModel, db, uuid
 
 # -------------------------------
@@ -23,3 +25,22 @@ class Transaction(BaseModel):
     category = db.relationship('Category', back_populates='transactions')
     account = db.relationship('Account', back_populates='transactions')
     payee = db.relationship('Payee', back_populates='transactions')
+
+
+    def to_dict(self, expand: list[str] = None) -> dict:
+        """Convert model instance to dictionary representation with optional expand."""
+        expand = expand or []
+        result = {c.name: getattr(self, c.name) for c in self.__table__.columns}
+
+        if "account" in expand and self.account:
+            result["account"] = self.account.to_dict()  # Make sure Account model has to_dict()
+            result.pop("account_id", None)
+        if "category" in expand and self.category:
+            result["category"] = self.category.to_dict()
+            result["category"]["category_name"] = self.category.category_name.name
+            result.pop("category_id", None)
+        if "payee" in expand and self.payee:
+            result["payee"] = self.payee.to_dict()
+            result.pop("payee_id", None)
+
+        return result
