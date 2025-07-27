@@ -3,7 +3,7 @@ from flask import jsonify
 from flask import Flask
 from dotenv import load_dotenv
 from extensions import db, migrate, jwt, cors
-from routes import user_bp, transaction_bp, category_bp, payee_bp, health_bp
+from routes import user_bp, transaction_bp, category_bp, payee_bp, health_bp, budget_bp
 from flasgger import Swagger
 
 load_dotenv()
@@ -23,6 +23,7 @@ main_prefix = '/api/v1'
 budget_prefix = '/budgets/<uuid:budget_id>'
 
 app.register_blueprint(user_bp, url_prefix=main_prefix + '/auth')
+app.register_blueprint(budget_bp, url_prefix=main_prefix + '/budgets')
 app.register_blueprint(transaction_bp, url_prefix=main_prefix + budget_prefix + '/transactions')
 app.register_blueprint(category_bp, url_prefix=main_prefix + budget_prefix + '/categories')
 app.register_blueprint(payee_bp, url_prefix=main_prefix + budget_prefix + '/payees')
