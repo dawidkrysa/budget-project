@@ -1,6 +1,8 @@
 #!/usr/bin/env python3
 from extensions import db
-import uuid
+from sqlalchemy.dialects.postgresql import UUID
+from uuid import uuid4
+
 
 # -------------------------------
 # BaseModel

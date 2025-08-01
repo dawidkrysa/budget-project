@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 from typing import override
-
-from models.base import BaseModel, db, uuid
+import uuid
+from models.base import BaseModel, db, uuid4, UUID
 
 # -------------------------------
 # Transaction Model
@@ -12,7 +12,7 @@ class Transaction(BaseModel):
     """
     __tablename__ = 'transactions'
 
-    id = db.Column(db.String(36), primary_key=True, default=lambda: str(uuid.uuid4()))
+    id = db.Column(UUID(as_uuid=True), primary_key=True, default=uuid4)
     date = db.Column(db.Date, nullable=False)
     category_id = db.Column(db.String(36), db.ForeignKey('categories.id'), nullable=True)
     account_id = db.Column(db.String(36), db.ForeignKey('accounts.id'), nullable=False)

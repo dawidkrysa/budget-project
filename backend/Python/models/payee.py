@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-from models.base import BaseModel, db, uuid
+from models.base import BaseModel, db, uuid4, UUID
 
 # -------------------------------
 # Payee Model
@@ -11,7 +11,7 @@ class Payee(BaseModel):
     """
     __tablename__ = 'payees'
 
-    id = db.Column(db.String(36), primary_key=True, default=lambda: str(uuid.uuid4()))
+    id = db.Column(UUID(as_uuid=True), primary_key=True, default=uuid4)
     name = db.Column(db.Text, nullable=False, unique=True)
     transfer_account_id = db.Column(db.String(36), db.ForeignKey('accounts.id'), nullable=True)
     deleted = db.Column(db.Boolean, default=False)

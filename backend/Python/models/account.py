@@ -1,4 +1,4 @@
-from models.base import BaseModel, db, uuid
+from models.base import BaseModel, db, uuid4, UUID
 
 # -------------------------------
 # Account Model
@@ -9,7 +9,7 @@ class Account(BaseModel):
     """
     __tablename__ = 'accounts'
 
-    id = db.Column(db.UUID, primary_key=True, default=lambda: str(uuid.uuid4()))  # UUID string
+    id = db.Column(UUID(as_uuid=True), primary_key=True, default=uuid4)
     name = db.Column(db.Text, nullable=False, unique=True)
     type_id = db.Column(db.String(36), db.ForeignKey('accountsType.id'), nullable=True)
     deleted = db.Column(db.Boolean, default=False)
@@ -31,7 +31,7 @@ class AccountsType(BaseModel):
     """
     __tablename__ = 'accountsType'
 
-    id = db.Column(db.String(36), primary_key=True)
+    id = db.Column(UUID(as_uuid=True), primary_key=True, default=uuid4)
     name = db.Column(db.Text, nullable=False)
 
     accounts = db.relationship('Account', back_populates='accountsType')

@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-from models.base import BaseModel, db, uuid
+from models.base import BaseModel, db, uuid4, UUID
 
 # -------------------------------
 # Month Model
@@ -11,7 +11,7 @@ class Month(BaseModel):
     """
     __tablename__ = 'months'
 
-    id = db.Column(db.String(36), primary_key=True, default=lambda: str(uuid.uuid4()))
+    id = db.Column(UUID(as_uuid=True), primary_key=True, default=uuid4)
     month = db.Column(db.Integer, primary_key=True)
     year = db.Column(db.Integer, primary_key=True)
     budgeted = db.Column(db.Numeric(15, 2), default=0)

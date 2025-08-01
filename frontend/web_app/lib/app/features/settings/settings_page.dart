@@ -8,6 +8,6 @@ class SettingsPage extends StatelessWidget {
   Widget build(BuildContext context) {
     final inputWidth = LayoutUtils.getResponsiveInputWidth(context);
 
-    return Center();
+    return Center(child: Text('Nice to meet you!'));
   }
 }

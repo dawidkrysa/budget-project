@@ -2,7 +2,6 @@
 import 'dart:convert'; // for jsonEncode, json.decode, utf8
 import 'package:dio/dio.dart'; // for Dio HTTP client
 import 'package:jwt_decoder/jwt_decoder.dart';
-import 'package:universal_html/html.dart' as html;
 import 'package:web_app/services/token_service.dart';
 import 'package:web_app/utils/debug_utils.dart';
 

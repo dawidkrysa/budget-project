@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-from models.base import BaseModel, db, uuid
+from models.base import BaseModel, db, uuid4, UUID
 
 # -------------------------------
 # Category Model
@@ -11,7 +11,7 @@ class Category(BaseModel):
     """
     __tablename__ = 'categories'
 
-    id = db.Column(db.String(36), primary_key=True, default=lambda: str(uuid.uuid4()))
+    id = db.Column(UUID(as_uuid=True), primary_key=True, default=uuid4)
     category_name_id = db.Column(db.String(36), db.ForeignKey('category_names.id'), nullable=False)
     category_group_id = db.Column(db.String(36), db.ForeignKey('category_groups.id'), nullable=False)
     hidden = db.Column(db.Boolean, default=False)
@@ -33,7 +33,7 @@ class CategoryName(BaseModel):
     """
     __tablename__ = 'category_names'
 
-    id = db.Column(db.String(36), primary_key=True, default=lambda: str(uuid.uuid4()))
+    id = db.Column(UUID(as_uuid=True), primary_key=True, default=uuid4)
     name = db.Column(db.Text, nullable=False, unique=True)
 
     categories = db.relationship('Category', back_populates='category_name')
@@ -48,7 +48,7 @@ class CategoryGroup(BaseModel):
     """
     __tablename__ = 'category_groups'
 
-    id = db.Column(db.String(36), primary_key=True, default=lambda: str(uuid.uuid4()))
+    id = db.Column(UUID(as_uuid=True), primary_key=True, default=uuid4)
     name = db.Column(db.Text, nullable=False, unique=True)
     deleted = db.Column(db.Boolean, default=False)
     budget_id = db.Column(db.String(36), db.ForeignKey('budgets.id'), nullable=False)
