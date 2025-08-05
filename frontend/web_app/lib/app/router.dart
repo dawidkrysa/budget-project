@@ -1,4 +1,5 @@
 import 'package:go_router/go_router.dart';
+import 'package:web_app/utils/debug_utils.dart';
 import '../provider/auth_provider.dart';
 import './features/budget/budget_page.dart';
 import './features/transactions/transactions_page.dart';
@@ -9,27 +10,44 @@ import './features/login/login_page.dart';
 import './features/signup/signup_page.dart';
 import 'navigation.dart';
 
-
 GoRouter createRouter(AuthProvider authProvider) {
   return GoRouter(
     initialLocation: AppRoutes.login,
     refreshListenable: authProvider,
     redirect: (context, state) {
+      DebugUtils.log(
+        'Redirect: isLoading=${authProvider.isLoading}, isAuthenticated=${authProvider.isAuthenticated}, path=${state.uri.path}',
+      );
       if (authProvider.isLoading) return null;
 
       final loggedIn = authProvider.isAuthenticated;
+      final path = state.uri.path;
 
-      // If not logged in and trying to access anything other than login, redirect to login
-      if (!loggedIn &&
-          state.matchedLocation != AppRoutes.login &&
-          state.matchedLocation != AppRoutes.signup) {
+      const publicRoutes = {AppRoutes.login, AppRoutes.signup};
+      const privateRoutes = {
+        AppRoutes.budget,
+        AppRoutes.transactions,
+        AppRoutes.accounts,
+        AppRoutes.reports,
+        AppRoutes.settings,
+      };
+
+      // Redirect unauthenticated users to login if accessing protected routes
+      if (!loggedIn && !publicRoutes.contains(path)) {
         return AppRoutes.login;
       }
 
-      // If logged in and trying to go to login page, redirect to first protected page
-      if (loggedIn && state.matchedLocation == AppRoutes.login) return AppRoutes.budget;
+      // If logged in and on a private route, stay (no redirect)
+      if (loggedIn && privateRoutes.contains(path)) {
+        return null;
+      }
 
-      // Otherwise no redirect
+      // Redirect logged-in users from public routes to budget
+      if (loggedIn && publicRoutes.contains(path)) {
+        return AppRoutes.budget;
+      }
+
+      // Default: no redirect
       return null;
     },
     routes: [
@@ -74,7 +92,7 @@ GoRouter createRouter(AuthProvider authProvider) {
 }
 
 class AppRoutes {
-   // Getting access without creating an instance, immutable
+  // Getting access without creating an instance, immutable
   static const String budget = '/budget';
   static const String transactions = '/transactions';
   static const String accounts = '/accounts';
@@ -82,7 +100,6 @@ class AppRoutes {
   static const String settings = '/settings';
   static const String signup = '/signup';
   static const String login = '/';
-  static const String logout = '/';
 
   static const List<String> shellRoutes = [
     budget,
@@ -90,6 +107,5 @@ class AppRoutes {
     accounts,
     reports,
     settings,
-    logout
   ];
 }
